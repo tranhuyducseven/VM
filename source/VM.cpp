@@ -264,6 +264,7 @@ void VM::cpu()
                                            cout << this->Register[index1].dataInt << endl
                                              << this->Register[index1].dataFloat << endl
                                              << this->Register[index1].dataBool << endl;
+                                             cout<<"12w1231232131"<<endl;
                                         
                                     }
                                     else if (check1==2 && check2==1)
