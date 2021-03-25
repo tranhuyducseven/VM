@@ -22,11 +22,29 @@ public:
   bool getDataBool();
   ~DataStorage();
 };
+class Instruction
+{
+private:
+  friend class VM;
+
+private:
+  string nameOpcode;
+  int nOperands;
+  string op1;
+  string op2;
+
+public:
+  Instruction();
+  string getNameOpcode();
+  string getOp1();
+  string getOp2();
+  int getNOperands();
+  Instruction getElementInstruction(string Code);
+  ~Instruction();
+};
 
 class VM
 {
-public:
-  class Instruction;
 
 private:
   string *codes;
@@ -37,36 +55,14 @@ private:
   int ip;
   int sp;
   Instruction *instr;
-  
-
 
 public:
   VM();
   VM(Instruction *instr, int ip, int nCode);
-  void run(string filename);
+  void run( string filename);
   void readCode(string filename);
   void cpu();
-
   ~VM();
-
-public:
-  class Instruction
-  {
-  private:
-    string nameOpcode;
-    int nOperands;
-    string op1;
-    string op2;
-
-  public:
-    Instruction();
-    string getNameOpcode();
-    string getOp1();
-    string getOp2();
-    int getNOperands();
-    Instruction getElementInstruction(string Code);
-    ~Instruction();
-  };
 };
 
 #endif
