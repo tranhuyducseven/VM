@@ -171,19 +171,14 @@ void VM::run(string filename)
     }
 
     readCode(filename);
-    int numlines = this->nCode;
-    cout<<"numlines"<<numlines<<endl;
+    int numlines = this->nCode;  
     Instruction *instructions = new Instruction[numlines];
     for (int i = 0; i < numlines; i++)
     {
         instructions[i] = instructions[i].getElementInstruction(this->codes[i]);
     }
     VM *newVM = new VM(instructions, 0, numlines);
-    for (int i = 0; i < numlines; i++)
-    {
-        cout << "instr[" << i << "]" << newVM->instr[0].getNameOpcode() << "xxx" << endl;
-    }
-    newVM->Register = new DataStorage[15];
+     newVM->Register = new DataStorage[15];
     newVM->staticMemory = new DataStorage[65536];
     newVM->stack = new int[1000];
     newVM->cpu();
@@ -193,13 +188,14 @@ void VM::run(string filename)
 void VM::cpu()
 {
     int lengthOfCode = this->nCode;
+    cout<<"length of code"<<lengthOfCode<<endl;
     while (this->ip < lengthOfCode)
     {
         Instruction temp = this->instr[ip];
+        cout<<"temp"<<" "<<temp.getNameOpcode()<<" "<<endl;
         string opcode = temp.getNameOpcode();
-
-        cout << "opcode is:" << opcode << endl;
-        ip++;
+        cout << "opcode is: " << opcode << endl;
+      
         this->ip++;
         if (opcode == "Add" || opcode == "Minus" || opcode == "Mul" || opcode == "Div")
         {
