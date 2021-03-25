@@ -14,12 +14,18 @@ private:
   int dataInt;
   float dataFloat;
   bool dataBool;
+  int checkType;
 
 public:
   DataStorage();
   int getDataInt();
+  void setDataInt(int data);
   float getDataFLoat();
+  void setDataFloat(float data);
   bool getDataBool();
+  void setDataBool(bool data);
+  int getTypeData();
+  void setTypeData(int check);
   ~DataStorage();
 };
 class Instruction
@@ -59,7 +65,7 @@ private:
 public:
   VM();
   VM(Instruction *instr, int ip, int nCode);
-  void run( string filename);
+  void run(string filename);
   void readCode(string filename);
   void cpu();
   ~VM();
