@@ -6,7 +6,7 @@ int pow(int base, int exp);
 string eraseChar(string str, char c);
 string eraseCharAtIndex(string str, int index);
 int checkRegister(string string, int sizeOfString);
-int checkOperand2_Arithmetic(string str, DataStorage &value)
+int checkOperand2_Arithmetic(string str, DataStorage &value);
 int countNCode(string filename);
 class DataStorage
 {
