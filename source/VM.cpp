@@ -10,9 +10,10 @@ int pow(int base, int exp)
 
 ///////////
 string eraseChar(string str, char c)
-{
+{    
+    int n = str.length();
     string newString = "";
-    for (int i = 0; i < str.length(); i++)
+    for (int i = 0;i<n; i++)
     {
         char currentChar = str[i];
         if (currentChar != c)
@@ -22,8 +23,9 @@ string eraseChar(string str, char c)
 }
 string eraseCharAtIndex(string str, int index)
 {
+    int n = str.length();
     string newString = "";
-    for (int i = 0; i < str.length(); i++)
+    for (int i = 0; i<n; i++)
     {
         if (i != index)
         {
@@ -60,7 +62,7 @@ int checkRegister(string string, int sizeOfString)
             if (sizeOfString == 2)
             {
                 index = (int)(string[1]) - 48;
-                if (1 <= index <= 9)
+                if (index >=1 && index <= 9)
                 {
                     return index;
                 }
@@ -74,7 +76,7 @@ int checkRegister(string string, int sizeOfString)
                 int a = (int)(string[1]) - 48;
                 int b = (int)(string[2]) - 48;
                 index = a * 10 + b;
-                if (10 <= index <= 15)
+                if (index >=10 && index <= 15)
                 {
                     return index;
                 }
@@ -90,7 +92,8 @@ int checkRegister(string string, int sizeOfString)
 }
 bool checkSpace(string str)
 {
-    for (int i = 0; i < str.length(); i++)
+    int n = str.length();
+    for (int i = 0; i <n; i++)
     {
         if (str[i] == ' ' || str[i] == '\n' || str[i] == '\r')
         {
@@ -99,7 +102,7 @@ bool checkSpace(string str)
     }
     return false;
 }
-int checkOperand2_Arithmetic(string str, DataStorage &value)
+int checkOperand2_Arithmetic(string str, DataStorage& value)
 {
     int length = str.length();
     int flag = 0;
@@ -152,12 +155,12 @@ int checkOperand2_Arithmetic(string str, DataStorage &value)
     }
     if (flag == 2)
     {
-        double num = 0;
+        float num = 0;
         for (int j = 0; j < i; j++)
         {
             if (str[j] >= '0' && str[j] <= '9')
             {
-                num += (int)(str[j]) * pow(10, i - j - 1);
+                num += (float)((int)(str[j]) * pow(10, i - j - 1));
             }
             else
                 return -1;
@@ -220,7 +223,7 @@ float DataStorage::getDataFLoat()
 };
 void DataStorage::setDataFloat(float data)
 {
-    this->dataInt = data;
+    this->dataFloat = data;
 }
 bool DataStorage::getDataBool()
 
@@ -229,7 +232,7 @@ bool DataStorage::getDataBool()
 }
 void DataStorage::setDataBool(bool data)
 {
-    this->dataInt = data;
+    this->dataBool = data;
 }
 int DataStorage::getTypeData()
 
@@ -269,7 +272,7 @@ int Instruction::getNOperands()
 {
     return this->nOperands;
 }
-Instruction::~Instruction(){};
+Instruction::~Instruction() {};
 //VM CLASS
 /////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////
@@ -284,7 +287,7 @@ VM::VM()
     this->staticMemory = nullptr;
     this->instr = nullptr;
 }
-VM::VM(Instruction *instr, int ip, int nCode)
+VM::VM(Instruction* instr, int ip, int nCode)
 {
     this->ip = ip;
     this->nCode = nCode;
@@ -333,12 +336,12 @@ void VM::run(string filename)
 
     readCode(filename);
     int numlines = this->nCode;
-    Instruction *instructions = new Instruction[numlines];
+    Instruction* instructions = new Instruction[numlines];
     for (int i = 0; i < numlines; i++)
     {
         instructions[i] = instructions[i].getElementInstruction(this->codes[i]);
     }
-    VM *newVM = new VM(instructions, 0, numlines);
+    VM* newVM = new VM(instructions, 0, numlines);
     newVM->Register = new DataStorage[15];
     newVM->staticMemory = new DataStorage[65536];
     newVM->stack = new int[1000];
@@ -502,22 +505,22 @@ void VM::cpu()
                             {
                                 DataStorage value;
                                 int check = checkOperand2_Arithmetic(op2, value);
-                                int checkTypeR= this->Register[index1].getTypeData();
-                                if (check == 0 &&checkTypeR==1)
+                                int checkTypeR = this->Register[index1].getTypeData();
+                                if (check == 0 && checkTypeR == 1)
                                 {
-                                    this->Register[index1].dataInt+=value.getDataInt();
+                                    this->Register[index1].dataInt += value.getDataInt();
                                 }
-                                else if (check = 1)
+                                else if (check == 1)
                                 {
-                                     cout<<endl;
+                                    cout << endl;
                                 }
-                                else if (check = 2){
-                                         cout<<endl;
+                                else if (check == 2) {
+                                    cout << endl;
                                 }
-                                 else
-                                    {
-                                        cout<<endl;
-                                    }
+                                else
+                                {
+                                    cout << endl;
+                                }
                             }
                         }
                     }
