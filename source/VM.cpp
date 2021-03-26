@@ -10,10 +10,10 @@ int pow(int base, int exp)
 
 ///////////
 string eraseChar(string str, char c)
-{    
+{
     int n = str.length();
     string newString = "";
-    for (int i = 0;i<n; i++)
+    for (int i = 0; i < n; i++)
     {
         char currentChar = str[i];
         if (currentChar != c)
@@ -25,7 +25,7 @@ string eraseCharAtIndex(string str, int index)
 {
     int n = str.length();
     string newString = "";
-    for (int i = 0; i<n; i++)
+    for (int i = 0; i < n; i++)
     {
         if (i != index)
         {
@@ -62,7 +62,7 @@ int checkRegister(string string, int sizeOfString)
             if (sizeOfString == 2)
             {
                 index = (int)(string[1]) - 48;
-                if (index >=1 && index <= 9)
+                if (index >= 1 && index <= 9)
                 {
                     return index;
                 }
@@ -76,7 +76,7 @@ int checkRegister(string string, int sizeOfString)
                 int a = (int)(string[1]) - 48;
                 int b = (int)(string[2]) - 48;
                 index = a * 10 + b;
-                if (index >=10 && index <= 15)
+                if (index >= 10 && index <= 15)
                 {
                     return index;
                 }
@@ -93,7 +93,7 @@ int checkRegister(string string, int sizeOfString)
 bool checkSpace(string str)
 {
     int n = str.length();
-    for (int i = 0; i <n; i++)
+    for (int i = 0; i < n; i++)
     {
         if (str[i] == ' ' || str[i] == '\n' || str[i] == '\r')
         {
@@ -102,7 +102,7 @@ bool checkSpace(string str)
     }
     return false;
 }
-int checkOperand2_Arithmetic(string str, DataStorage& value)
+int checkOperand2_Arithmetic(string str, DataStorage &value)
 {
     int length = str.length();
     int flag = 0;
@@ -216,6 +216,7 @@ int DataStorage::getDataInt()
 void DataStorage::setDataInt(int data)
 {
     this->dataInt = data;
+    this->checkType = 1;
 }
 float DataStorage::getDataFLoat()
 {
@@ -224,11 +225,13 @@ float DataStorage::getDataFLoat()
 void DataStorage::setDataFloat(float data)
 {
     this->dataFloat = data;
+    this->checkType = 2;
 }
 bool DataStorage::getDataBool()
 
 {
     return this->dataBool;
+    this->checkType = 3;
 }
 void DataStorage::setDataBool(bool data)
 {
@@ -272,7 +275,7 @@ int Instruction::getNOperands()
 {
     return this->nOperands;
 }
-Instruction::~Instruction() {};
+Instruction::~Instruction(){};
 //VM CLASS
 /////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////
@@ -287,7 +290,7 @@ VM::VM()
     this->staticMemory = nullptr;
     this->instr = nullptr;
 }
-VM::VM(Instruction* instr, int ip, int nCode)
+VM::VM(Instruction *instr, int ip, int nCode)
 {
     this->ip = ip;
     this->nCode = nCode;
@@ -328,26 +331,34 @@ void VM::readCode(string filename)
 void VM::run(string filename)
 {
     this->nCode = countNCode(filename);
-    this->codes = new string[this->nCode];
-    for (int i = 0; i < this->nCode; i++)
+    if (this->nCode == 0)
     {
-        this->codes[i] = "\0";
+        InvalidInstruction e = InvalidInstruction(0);
+        throw e;
     }
+    else
+    {
+        this->codes = new string[this->nCode];
+        for (int i = 0; i < this->nCode; i++)
+        {
+            this->codes[i] = "\0";
+        }
 
-    readCode(filename);
-    int numlines = this->nCode;
-    Instruction* instructions = new Instruction[numlines];
-    for (int i = 0; i < numlines; i++)
-    {
-        instructions[i] = instructions[i].getElementInstruction(this->codes[i]);
+        readCode(filename);
+        int numlines = this->nCode;
+        Instruction *instructions = new Instruction[numlines];
+        for (int i = 0; i < numlines; i++)
+        {
+            instructions[i] = instructions[i].getElementInstruction(this->codes[i]);
+        }
+        VM *newVM = new VM(instructions, 0, numlines);
+        newVM->Register = new DataStorage[15];
+        newVM->staticMemory = new DataStorage[65536];
+        newVM->stack = new int[1000];
+        newVM->cpu();
+        delete[] instructions;
+        delete newVM;
     }
-    VM* newVM = new VM(instructions, 0, numlines);
-    newVM->Register = new DataStorage[15];
-    newVM->staticMemory = new DataStorage[65536];
-    newVM->stack = new int[1000];
-    newVM->cpu();
-    delete[] instructions;
-    delete newVM;
 }
 void VM::cpu()
 {
@@ -389,9 +400,11 @@ void VM::cpu()
 
                                 {
                                     index2 = index2 - 1;
+                                     this->Register[index2].setDataInt(1);
+                                     this->Register[index1].setDataFloat(2.5);
                                     int check1 = this->Register[index1].getTypeData();
                                     int check2 = this->Register[index2].getTypeData();
-                                    if (opcode == "Add")
+                                   if (opcode == "Add")
                                     {
                                         if (check1 == 1 && check2 == 1)
                                         {
@@ -408,6 +421,7 @@ void VM::cpu()
                                             this->Register[index1].dataFloat += this->Register[index2].dataInt;
                                             this->Register[index1].setTypeData(2);
                                             this->Register[index1].dataInt = 0;
+                                            cout<<this->Register[index1].getDataFLoat()<<endl;
                                         }
                                         else
                                         {
@@ -435,6 +449,7 @@ void VM::cpu()
                                             this->Register[index1].dataFloat -= this->Register[index2].dataInt;
                                             this->Register[index1].setTypeData(2);
                                             this->Register[index1].dataInt = 0;
+                                            cout<<this->Register[index1].getDataFLoat()<<endl;
                                         }
                                     }
                                     else if (opcode == "Mul")
@@ -454,6 +469,7 @@ void VM::cpu()
                                             this->Register[index1].dataFloat *= this->Register[index2].dataInt;
                                             this->Register[index1].setTypeData(2);
                                             this->Register[index1].dataInt = 0;
+                                            cout<<this->Register[index1].getDataFLoat()<<endl;
                                         }
                                     }
                                     else if (opcode == "Div")
@@ -482,6 +498,7 @@ void VM::cpu()
                                                 this->Register[index1].dataFloat += this->Register[index2].dataInt;
                                                 this->Register[index1].dataInt = 0;
                                                 this->Register[index1].setTypeData(2);
+                                                cout<<this->Register[index1].getDataFLoat()<<endl;
                                             }
                                         }
                                     }
@@ -514,7 +531,8 @@ void VM::cpu()
                                 {
                                     cout << endl;
                                 }
-                                else if (check == 2) {
+                                else if (check == 2)
+                                {
                                     cout << endl;
                                 }
                                 else
