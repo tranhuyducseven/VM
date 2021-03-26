@@ -101,11 +101,24 @@ bool checkSpace(string str)
     }
     return false;
 }
-int checkOperand2_Arithmetic(string str, DataStorage &value)
+int checkOperand2(string str, DataStorage &value)
 {
     //return 0 when wrong
     //flag==1 int
     //flag==2 Float
+    //flag==3 Bool;
+    if (str == "true")
+    {
+        value.setDataBool(true);
+        value.setTypeData(3);
+        return 3;
+    }
+    if (str == "false")
+    {
+        value.setDataBool(false);
+        value.setTypeData(3);
+        return 3;
+    }
     int length = str.length();
     int flag = 1;
     int i;
@@ -119,12 +132,12 @@ int checkOperand2_Arithmetic(string str, DataStorage &value)
     }
     if (flag == 2)
     {
-        float num = 0;
+        double num = 0;
         for (int j = 0; j < i; j++)
         {
             if (str[j] >= '0' && str[j] <= '9')
             {
-                float temp = (float)(((int)(str[j]) - 48));
+                double temp = (double)(((int)(str[j]) - 48));
                 num += temp * pow(10, i - j - 1);
             }
             else
@@ -135,8 +148,8 @@ int checkOperand2_Arithmetic(string str, DataStorage &value)
         {
             if (str[k] >= '0' && str[k] <= '9')
             {
-                float temp = (float)(((int)(str[k]) - 48));
-                int exp = k + i + 1 - length;
+                double temp = (double)(((int)(str[k]) - 48));
+                int exp = k - i;
                 num += temp / pow(10, exp);
             }
             else
@@ -187,11 +200,11 @@ void DataStorage::setDataInt(int data)
     this->dataInt = data;
     this->checkType = 1;
 }
-float DataStorage::getDataFloat()
+double DataStorage::getDataFloat()
 {
     return this->dataFloat;
 };
-void DataStorage::setDataFloat(float data)
+void DataStorage::setDataFloat(double data)
 {
     this->dataFloat = data;
     this->checkType = 2;
@@ -331,8 +344,7 @@ void VM::run(string filename)
 }
 void VM::cpu()
 {
-    this->Register[1].setDataInt(4);
-    this->Register[0].setDataFloat(3);
+    this->Register[0].setDataInt(5);
     int lengthOfCode = this->nCode;
     while (this->ip < lengthOfCode)
     {
@@ -389,7 +401,6 @@ void VM::cpu()
                                             this->Register[index1].dataFloat += this->Register[index2].dataInt;
                                             this->Register[index1].setTypeData(2);
                                             this->Register[index1].dataInt = 0;
-                                            cout << this->Register[index1].getDataFloat() << endl;
                                         }
                                         else
                                         {
@@ -415,7 +426,6 @@ void VM::cpu()
                                             this->Register[index1].dataFloat -= this->Register[index2].dataInt;
                                             this->Register[index1].setTypeData(2);
                                             this->Register[index1].dataInt = 0;
-                                            cout << this->Register[index1].getDataFloat() << endl;
                                         }
                                         else
                                         {
@@ -441,7 +451,6 @@ void VM::cpu()
                                             this->Register[index1].dataFloat *= this->Register[index2].dataInt;
                                             this->Register[index1].setTypeData(2);
                                             this->Register[index1].dataInt = 0;
-                                            cout << this->Register[index1].getDataFloat() << endl;
                                         }
                                         else
                                         {
@@ -472,10 +481,11 @@ void VM::cpu()
                                                 DivideByZero e = DivideByZero(address);
                                                 throw e;
                                             }
-                                            else{
-                                            this->Register[index1].dataFloat = this->Register[index1].dataInt / this->Register[index2].dataFloat;
-                                            this->Register[index1].dataInt = 0;
-                                            this->Register[index1].setTypeData(2);
+                                            else
+                                            {
+                                                this->Register[index1].dataFloat = this->Register[index1].dataInt / this->Register[index2].dataFloat;
+                                                this->Register[index1].dataInt = 0;
+                                                this->Register[index1].setTypeData(2);
                                             }
                                         }
                                         else if (check1 == 2 && check2 == 1)
@@ -488,9 +498,9 @@ void VM::cpu()
                                             }
                                             else
                                             {
-                                            this->Register[index1].dataFloat /= this->Register[index2].dataInt;
-                                            this->Register[index1].dataInt = 0;
-                                            this->Register[index1].setTypeData(2);                                           
+                                                this->Register[index1].dataFloat /= this->Register[index2].dataInt;
+                                                this->Register[index1].dataInt = 0;
+                                                this->Register[index1].setTypeData(2);
                                             }
                                         }
                                         else
@@ -499,10 +509,6 @@ void VM::cpu()
                                             TypeMismatch e = TypeMismatch(address);
                                             throw e;
                                         }
-                                         cout << this->Register[index1].getDataInt() << endl
-                                         << this->Register[index1].getDataFloat() << endl
-                                         << this->Register[index1].getDataBool() << endl<<this->Register[index1].getTypeData()<<endl;
-
                                     }
                                 }
                                 else if (index2 == -1)
@@ -523,7 +529,7 @@ void VM::cpu()
                             else if (op2[0] != 'R')
                             {
                                 DataStorage value;
-                                int checkLiteral = checkOperand2_Arithmetic(op2, value);
+                                int checkLiteral = checkOperand2(op2, value);
                                 int checkTypeR = this->Register[index1].getTypeData();
                                 if (opcode == "Add")
                                 {
@@ -549,9 +555,6 @@ void VM::cpu()
                                         TypeMismatch e = TypeMismatch(address);
                                         throw e;
                                     }
-                                    cout << this->Register[index1].getDataInt() << endl
-                                         << this->Register[index1].getDataFloat() << endl
-                                         << this->Register[index1].getDataBool() << endl;
                                 }
                                 else if (opcode == "Minus")
                                 {
@@ -577,9 +580,6 @@ void VM::cpu()
                                         TypeMismatch e = TypeMismatch(address);
                                         throw e;
                                     }
-                                    cout << this->Register[index1].getDataInt() << endl
-                                         << this->Register[index1].getDataFloat() << endl
-                                         << this->Register[index1].getDataBool() << endl;
                                 }
                                 else if (opcode == "Mul")
                                 {
@@ -605,9 +605,6 @@ void VM::cpu()
                                         TypeMismatch e = TypeMismatch(address);
                                         throw e;
                                     }
-                                    cout << this->Register[index1].getDataInt() << endl
-                                         << this->Register[index1].getDataFloat() << endl
-                                         << this->Register[index1].getDataBool() << endl;
                                 }
                                 else if (opcode == "Div")
                                 {
@@ -652,9 +649,6 @@ void VM::cpu()
                                             this->Register[index1].dataInt = 0;
                                             this->Register[index1].setTypeData(2);
                                         }
-                                        cout << this->Register[index1].getDataInt() << endl
-                                             << this->Register[index1].getDataFloat() << endl
-                                             << this->Register[index1].getDataBool() <<endl<<this->Register[index1].getTypeData()<< endl;
                                     }
                                     else
                                     {
@@ -674,7 +668,7 @@ void VM::cpu()
                         break;
                     }
                 }
-                 else
+                else
                 {
                     int address = this->ip - 1;
                     InvalidOperand e = InvalidOperand(address);
@@ -691,21 +685,874 @@ void VM::cpu()
             }
         }
 
-        else if (opcode==)
+        else if (opcode == "CmpEQ" || opcode == "CmpNE" || opcode == "CmpLT" || opcode == "CmpLE" || opcode == "CmpGT" || opcode == "CmpGE")
         {
+            if (temp.getNOperands() == 2)
+            {
+                string op1 = temp.getOp1();
+                int sizeOp1 = op1.length();
+                int index1 = checkRegister(op1, sizeOp1); //return R index;
+                if (index1 >= 1 && index1 <= 15)
+                {
+                    index1 = index1 - 1;
+                    string op2 = temp.getOp2();
+                    if (op2[0] == ' ')
+                    {
+                        op2 = eraseCharAtIndex(op2, 0);
+                        int sizeOp2 = op2.length();
+                        bool check = checkSpace(op2);
+                        if (check == true)
+                        {
+                            int address = this->ip - 1;
+                            InvalidInstruction e = InvalidInstruction(address);
+                            throw e;
+                            break;
+                        }
+                        else
+                        {
+                            if (op2[0] == 'R')
+                            {
+                                int index2 = checkRegister(op2, sizeOp2); //return R index;
+                                if (index2 >= 1 && index2 <= 15)
+                                {
+                                    index2 = index2 - 1;
+                                    int check1 = this->Register[index1].getTypeData();
+                                    int check2 = this->Register[index2].getTypeData();
+                                    if (opcode == "CmpEQ")
+                                    {
+                                        if (check1 == 3 && check2 == 3)
+                                        {
+                                            if (this->Register[index1].getDataBool() == this->Register[index2].getDataBool())
+                                            {
+                                                this->Register[index1].setDataBool(true);
+                                                this->Register[index1].setTypeData(3);
+                                            }
+                                            else
+                                            {
+                                                this->Register[index1].setDataBool(false);
+                                                this->Register[index1].setTypeData(3);
+                                            }
+                                        }
+                                        else if (check1 == 1 && check2 == 1)
+                                        {
+                                            if (this->Register[index1].getDataInt() == this->Register[index2].getDataInt())
+                                            {
+                                                this->Register[index1].setDataBool(true);
+                                                this->Register[index1].setTypeData(3);
+                                            }
+                                            else
+                                            {
+                                                this->Register[index1].setDataBool(false);
+                                                this->Register[index1].setTypeData(3);
+                                            }
+                                        }
+                                        else if (check1 == 1 && check2 == 2)
+                                        {
+                                            if ((double)(this->Register[index1].getDataInt()) == this->Register[index2].getDataFloat())
+                                            {
+                                                this->Register[index1].setDataBool(true);
+                                                this->Register[index1].setTypeData(3);
+                                            }
+                                            else
+                                            {
+                                                this->Register[index1].setDataBool(false);
+                                                this->Register[index1].setTypeData(3);
+                                            }
+                                        }
+                                        else if (check1 == 2 && check2 == 1)
+                                        {
+                                            if (this->Register[index1].getDataFloat() == (double)(this->Register[index2].getDataInt()))
+                                            {
+                                                this->Register[index1].setDataBool(true);
+                                                this->Register[index1].setTypeData(3);
+                                            }
+                                            else
+                                            {
+                                                this->Register[index1].setDataBool(false);
+                                                this->Register[index1].setTypeData(3);
+                                            }
+                                        }
+                                        else if (check1 == 2 && check2 == 2)
+                                        {
+                                            if (this->Register[index1].getDataFloat() == (this->Register[index2].getDataFloat()))
+                                            {
+                                                this->Register[index1].setDataBool(true);
+                                                this->Register[index1].setTypeData(3);
+                                            }
+                                            else
+                                            {
+                                                this->Register[index1].setDataBool(false);
+                                                this->Register[index1].setTypeData(3);
+                                            }
+                                        }
+                                        else
+                                        {
+                                            int address = this->ip - 1;
+                                            TypeMismatch e = TypeMismatch(address);
+                                            throw e;
+                                        }
+                                    }
+                                    else if (opcode == "CmpNE")
+                                    {
+                                        if (check1 == 3 && check2 == 3)
+                                        {
+                                            if (this->Register[index1].getDataBool() != this->Register[index2].getDataBool())
+                                            {
+                                                this->Register[index1].setDataBool(true);
+                                                this->Register[index1].setTypeData(3);
+                                            }
+                                            else
+                                            {
+                                                this->Register[index1].setDataBool(false);
+                                                this->Register[index1].setTypeData(3);
+                                            }
+                                        }
+                                        else if (check1 == 1 && check2 == 1)
+                                        {
+                                            if (this->Register[index1].getDataInt() != this->Register[index2].getDataInt())
+                                            {
+                                                this->Register[index1].setDataBool(true);
+                                                this->Register[index1].setTypeData(3);
+                                            }
+                                            else
+                                            {
+                                                this->Register[index1].setDataBool(false);
+                                                this->Register[index1].setTypeData(3);
+                                            }
+                                        }
+                                        else if (check1 == 1 && check2 == 2)
+                                        {
+                                            if ((double)(this->Register[index1].getDataInt()) != this->Register[index2].getDataFloat())
+                                            {
+                                                this->Register[index1].setDataBool(true);
+                                                this->Register[index1].setTypeData(3);
+                                            }
+                                            else
+                                            {
+                                                this->Register[index1].setDataBool(false);
+                                                this->Register[index1].setTypeData(3);
+                                            }
+                                        }
+                                        else if (check1 == 2 && check2 == 1)
+                                        {
+                                            if (this->Register[index1].getDataFloat() != (double)(this->Register[index2].getDataInt()))
+                                            {
+                                                this->Register[index1].setDataBool(true);
+                                                this->Register[index1].setTypeData(3);
+                                            }
+                                            else
+                                            {
+                                                this->Register[index1].setDataBool(false);
+                                                this->Register[index1].setTypeData(3);
+                                            }
+                                        }
+                                        else if (check1 == 2 && check2 == 2)
+                                        {
+                                            if (this->Register[index1].getDataFloat() != (this->Register[index2].getDataFloat()))
+                                            {
+                                                this->Register[index1].setDataBool(true);
+                                                this->Register[index1].setTypeData(3);
+                                            }
+                                            else
+                                            {
+                                                this->Register[index1].setDataBool(false);
+                                                this->Register[index1].setTypeData(3);
+                                            }
+                                        }
+                                        else
+                                        {
+                                            int address = this->ip - 1;
+                                            TypeMismatch e = TypeMismatch(address);
+                                            throw e;
+                                        }
+                                    }
+                                    else if (opcode == "CmpLT")
+                                    {
+                                        if (check1 == 1 && check2 == 1)
+                                        {
+                                            if (this->Register[index1].getDataInt() < this->Register[index2].getDataInt())
+                                            {
+                                                this->Register[index1].setDataBool(true);
+                                                this->Register[index1].setTypeData(3);
+                                            }
+                                            else
+                                            {
+                                                this->Register[index1].setDataBool(false);
+                                                this->Register[index1].setTypeData(3);
+                                            }
+                                        }
+                                        else if (check1 == 1 && check2 == 2)
+                                        {
+                                            if ((double)(this->Register[index1].getDataInt()) < this->Register[index2].getDataFloat())
+                                            {
+                                                this->Register[index1].setDataBool(true);
+                                                this->Register[index1].setTypeData(3);
+                                            }
+                                            else
+                                            {
+                                                this->Register[index1].setDataBool(false);
+                                                this->Register[index1].setTypeData(3);
+                                            }
+                                        }
+                                        else if (check1 == 2 && check2 == 1)
+                                        {
+                                            if (this->Register[index1].getDataFloat() < (double)(this->Register[index2].getDataInt()))
+                                            {
+                                                this->Register[index1].setDataBool(true);
+                                                this->Register[index1].setTypeData(3);
+                                            }
+                                            else
+                                            {
+                                                this->Register[index1].setDataBool(false);
+                                                this->Register[index1].setTypeData(3);
+                                            }
+                                        }
+                                        else if (check1 == 2 && check2 == 2)
+                                        {
+                                            if (this->Register[index1].getDataFloat() < (this->Register[index2].getDataFloat()))
+                                            {
+                                                this->Register[index1].setDataBool(true);
+                                                this->Register[index1].setTypeData(3);
+                                            }
+                                            else
+                                            {
+                                                this->Register[index1].setDataBool(false);
+                                                this->Register[index1].setTypeData(3);
+                                            }
+                                        }
+                                        else
+                                        {
+                                            int address = this->ip - 1;
+                                            TypeMismatch e = TypeMismatch(address);
+                                            throw e;
+                                        }
+                                    }
+                                    else if (opcode == "CmpLE")
+                                    {
+                                        if (check1 == 1 && check2 == 1)
+                                        {
+                                            if (this->Register[index1].getDataInt() <= this->Register[index2].getDataInt())
+                                            {
+                                                this->Register[index1].setDataBool(true);
+                                                this->Register[index1].setTypeData(3);
+                                            }
+                                            else
+                                            {
+                                                this->Register[index1].setDataBool(false);
+                                                this->Register[index1].setTypeData(3);
+                                            }
+                                        }
+                                        else if (check1 == 1 && check2 == 2)
+                                        {
+                                            if ((double)(this->Register[index1].getDataInt()) <= this->Register[index2].getDataFloat())
+                                            {
+                                                this->Register[index1].setDataBool(true);
+                                                this->Register[index1].setTypeData(3);
+                                            }
+                                            else
+                                            {
+                                                this->Register[index1].setDataBool(false);
+                                                this->Register[index1].setTypeData(3);
+                                            }
+                                        }
+                                        else if (check1 == 2 && check2 == 1)
+                                        {
+                                            if (this->Register[index1].getDataFloat() <= (double)(this->Register[index2].getDataInt()))
+                                            {
+                                                this->Register[index1].setDataBool(true);
+                                                this->Register[index1].setTypeData(3);
+                                            }
+                                            else
+                                            {
+                                                this->Register[index1].setDataBool(false);
+                                                this->Register[index1].setTypeData(3);
+                                            }
+                                        }
+                                        else if (check1 == 2 && check2 == 2)
+                                        {
+                                            if (this->Register[index1].getDataFloat() <= (this->Register[index2].getDataFloat()))
+                                            {
+                                                this->Register[index1].setDataBool(true);
+                                                this->Register[index1].setTypeData(3);
+                                            }
+                                            else
+                                            {
+                                                this->Register[index1].setDataBool(false);
+                                                this->Register[index1].setTypeData(3);
+                                            }
+                                        }
+
+                                        else
+                                        {
+                                            int address = this->ip - 1;
+                                            TypeMismatch e = TypeMismatch(address);
+                                            throw e;
+                                        }
+                                    }
+                                    else if (opcode == "CmpGT")
+                                    {
+                                        if (check1 == 1 && check2 == 1)
+                                        {
+                                            if (this->Register[index1].getDataInt() > this->Register[index2].getDataInt())
+                                            {
+                                                this->Register[index1].setDataBool(true);
+                                                this->Register[index1].setTypeData(3);
+                                            }
+                                            else
+                                            {
+                                                this->Register[index1].setDataBool(false);
+                                                this->Register[index1].setTypeData(3);
+                                            }
+                                        }
+                                        else if (check1 == 1 && check2 == 2)
+                                        {
+                                            if ((double)(this->Register[index1].getDataInt()) > this->Register[index2].getDataFloat())
+                                            {
+                                                this->Register[index1].setDataBool(true);
+                                                this->Register[index1].setTypeData(3);
+                                            }
+                                            else
+                                            {
+                                                this->Register[index1].setDataBool(false);
+                                                this->Register[index1].setTypeData(3);
+                                            }
+                                        }
+                                        else if (check1 == 2 && check2 == 1)
+                                        {
+                                            if (this->Register[index1].getDataFloat() > (double)(this->Register[index2].getDataInt()))
+                                            {
+                                                this->Register[index1].setDataBool(true);
+                                                this->Register[index1].setTypeData(3);
+                                            }
+                                            else
+                                            {
+                                                this->Register[index1].setDataBool(false);
+                                                this->Register[index1].setTypeData(3);
+                                            }
+                                        }
+                                        else if (check1 == 2 && check2 == 2)
+                                        {
+                                            if (this->Register[index1].getDataFloat() > (this->Register[index2].getDataFloat()))
+                                            {
+                                                this->Register[index1].setDataBool(true);
+                                                this->Register[index1].setTypeData(3);
+                                            }
+                                            else
+                                            {
+                                                this->Register[index1].setDataBool(false);
+                                                this->Register[index1].setTypeData(3);
+                                            }
+                                        }
+
+                                        else
+                                        {
+                                            int address = this->ip - 1;
+                                            TypeMismatch e = TypeMismatch(address);
+                                            throw e;
+                                        }
+                                    }
+                                    else if (opcode == "CmpGE")
+                                    {
+                                        if (check1 == 1 && check2 == 1)
+                                        {
+                                            if (this->Register[index1].getDataInt() >= this->Register[index2].getDataInt())
+                                            {
+                                                this->Register[index1].setDataBool(true);
+                                                this->Register[index1].setTypeData(3);
+                                            }
+                                            else
+                                            {
+                                                this->Register[index1].setDataBool(false);
+                                                this->Register[index1].setTypeData(3);
+                                            }
+                                        }
+                                        else if (check1 == 1 && check2 == 2)
+                                        {
+                                            if ((double)(this->Register[index1].getDataInt()) >= this->Register[index2].getDataFloat())
+                                            {
+                                                this->Register[index1].setDataBool(true);
+                                                this->Register[index1].setTypeData(3);
+                                            }
+                                            else
+                                            {
+                                                this->Register[index1].setDataBool(false);
+                                                this->Register[index1].setTypeData(3);
+                                            }
+                                        }
+                                        else if (check1 == 2 && check2 == 1)
+                                        {
+                                            if (this->Register[index1].getDataFloat() >= (double)(this->Register[index2].getDataInt()))
+                                            {
+                                                this->Register[index1].setDataBool(true);
+                                                this->Register[index1].setTypeData(3);
+                                            }
+                                            else
+                                            {
+                                                this->Register[index1].setDataBool(false);
+                                                this->Register[index1].setTypeData(3);
+                                            }
+                                        }
+                                        else if (check1 == 2 && check2 == 2)
+                                        {
+                                            if (this->Register[index1].getDataFloat() >= (this->Register[index2].getDataFloat()))
+                                            {
+                                                this->Register[index1].setDataBool(true);
+                                                this->Register[index1].setTypeData(3);
+                                            }
+                                            else
+                                            {
+                                                this->Register[index1].setDataBool(false);
+                                                this->Register[index1].setTypeData(3);
+                                            }
+                                        }
+
+                                        else
+                                        {
+                                            int address = this->ip - 1;
+                                            TypeMismatch e = TypeMismatch(address);
+                                            throw e;
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    int address = this->ip - 1;
+                                    InvalidOperand e = InvalidOperand(address);
+                                    throw e;
+                                    break;
+                                }
+                            }
+                            else if (op2[0] != 'R')
+                            {
+                                DataStorage value;
+                                int checkLiteral = checkOperand2(op2, value);
+                                int checkTypeR = this->Register[index1].getTypeData();
+                                if (opcode == "CmpEQ")
+                                {
+                                    if (checkTypeR == 3 && checkLiteral == 3)
+                                    {
+                                        if (this->Register[index1].getDataBool() == value.getDataBool())
+                                        {
+                                            this->Register[index1].setDataBool(true);
+                                            this->Register[index1].setTypeData(3);
+                                        }
+                                        else
+                                        {
+                                            this->Register[index1].setDataBool(false);
+                                            this->Register[index1].setTypeData(3);
+                                        }
+                                    }
+                                    else if (checkTypeR == 1 && checkLiteral == 1)
+                                    {
+                                        if (this->Register[index1].getDataInt() == value.getDataInt())
+                                        {
+                                            this->Register[index1].setDataBool(true);
+                                            this->Register[index1].setTypeData(3);
+                                        }
+                                        else
+                                        {
+                                            this->Register[index1].setDataBool(false);
+                                            this->Register[index1].setTypeData(3);
+                                        }
+                                    }
+                                    else if (checkTypeR == 1 && checkLiteral == 2)
+                                    {
+                                        if ((double)(this->Register[index1].getDataInt()) == value.getDataFloat())
+                                        {
+                                            this->Register[index1].setDataBool(true);
+                                            this->Register[index1].setTypeData(3);
+                                        }
+                                        else
+                                        {
+                                            this->Register[index1].setDataBool(false);
+                                            this->Register[index1].setTypeData(3);
+                                        }
+                                    }
+                                    else if (checkTypeR == 2 && checkLiteral == 1)
+                                    {
+                                        if (this->Register[index1].getDataFloat() == (double)(value.getDataInt()))
+                                        {
+                                            this->Register[index1].setDataBool(true);
+                                            this->Register[index1].setTypeData(3);
+                                        }
+                                        else
+                                        {
+                                            this->Register[index1].setDataBool(false);
+                                            this->Register[index1].setTypeData(3);
+                                        }
+                                    }
+                                    else if (checkTypeR == 2 && checkLiteral == 2)
+                                    {
+                                        if (this->Register[index1].getDataFloat() == (value.getDataFloat()))
+                                        {
+                                            this->Register[index1].setDataBool(true);
+                                            this->Register[index1].setTypeData(3);
+                                        }
+                                        else
+                                        {
+                                            this->Register[index1].setDataBool(false);
+                                            this->Register[index1].setTypeData(3);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        int address = this->ip - 1;
+                                        TypeMismatch e = TypeMismatch(address);
+                                        throw e;
+                                    }
+                                }
+                                else if (opcode == "CmpNE")
+                                {
+                                    if (checkTypeR == 3 && checkLiteral == 3)
+                                    {
+                                        if (this->Register[index1].getDataBool() == value.getDataBool())
+                                        {
+                                            this->Register[index1].setDataBool(true);
+                                            this->Register[index1].setTypeData(3);
+                                        }
+                                        else
+                                        {
+                                            this->Register[index1].setDataBool(false);
+                                            this->Register[index1].setTypeData(3);
+                                        }
+                                    }
+                                    else if (checkTypeR == 1 && checkLiteral == 1)
+                                    {
+                                        if (this->Register[index1].getDataInt() != value.getDataInt())
+                                        {
+                                            this->Register[index1].setDataBool(true);
+                                            this->Register[index1].setTypeData(3);
+                                        }
+                                        else
+                                        {
+                                            this->Register[index1].setDataBool(false);
+                                            this->Register[index1].setTypeData(3);
+                                        }
+                                    }
+                                    else if (checkTypeR == 1 && checkLiteral == 2)
+                                    {
+                                        if ((double)(this->Register[index1].getDataInt()) != value.getDataFloat())
+                                        {
+                                            this->Register[index1].setDataBool(true);
+                                            this->Register[index1].setTypeData(3);
+                                        }
+                                        else
+                                        {
+                                            this->Register[index1].setDataBool(false);
+                                            this->Register[index1].setTypeData(3);
+                                        }
+                                    }
+                                    else if (checkTypeR == 2 && checkLiteral == 1)
+                                    {
+                                        if (this->Register[index1].getDataFloat() != (double)(value.getDataInt()))
+                                        {
+                                            this->Register[index1].setDataBool(true);
+                                            this->Register[index1].setTypeData(3);
+                                        }
+                                        else
+                                        {
+                                            this->Register[index1].setDataBool(false);
+                                            this->Register[index1].setTypeData(3);
+                                        }
+                                    }
+                                    else if (checkTypeR == 2 && checkLiteral == 2)
+                                    {
+                                        if (this->Register[index1].getDataFloat() != (value.getDataFloat()))
+                                        {
+                                            this->Register[index1].setDataBool(true);
+                                            this->Register[index1].setTypeData(3);
+                                        }
+                                        else
+                                        {
+                                            this->Register[index1].setDataBool(false);
+                                            this->Register[index1].setTypeData(3);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        int address = this->ip - 1;
+                                        TypeMismatch e = TypeMismatch(address);
+                                        throw e;
+                                    }
+                                }
+                                else if (opcode == "CmpLT")
+                                {
+                                    if (checkTypeR == 1 && checkLiteral == 1)
+                                    {
+                                        if (this->Register[index1].getDataInt() < value.getDataInt())
+                                        {
+                                            this->Register[index1].setDataBool(true);
+                                            this->Register[index1].setTypeData(3);
+                                        }
+                                        else
+                                        {
+                                            this->Register[index1].setDataBool(false);
+                                            this->Register[index1].setTypeData(3);
+                                        }
+                                    }
+                                    else if (checkTypeR == 1 && checkLiteral == 2)
+                                    {
+                                        if ((double)(this->Register[index1].getDataInt()) < value.getDataFloat())
+                                        {
+                                            this->Register[index1].setDataBool(true);
+                                            this->Register[index1].setTypeData(3);
+                                        }
+                                        else
+                                        {
+                                            this->Register[index1].setDataBool(false);
+                                            this->Register[index1].setTypeData(3);
+                                        }
+                                    }
+                                    else if (checkTypeR == 2 && checkLiteral == 1)
+                                    {
+                                        if (this->Register[index1].getDataFloat() < (double)(value.getDataInt()))
+                                        {
+                                            this->Register[index1].setDataBool(true);
+                                            this->Register[index1].setTypeData(3);
+                                        }
+                                        else
+                                        {
+                                            this->Register[index1].setDataBool(false);
+                                            this->Register[index1].setTypeData(3);
+                                        }
+                                    }
+                                    else if (checkTypeR == 2 && checkLiteral == 2)
+                                    {
+                                        if (this->Register[index1].getDataFloat() < (value.getDataFloat()))
+                                        {
+                                            this->Register[index1].setDataBool(true);
+                                            this->Register[index1].setTypeData(3);
+                                        }
+                                        else
+                                        {
+                                            this->Register[index1].setDataBool(false);
+                                            this->Register[index1].setTypeData(3);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        int address = this->ip - 1;
+                                        TypeMismatch e = TypeMismatch(address);
+                                        throw e;
+                                    }
+                                }
+                                else if (opcode == "CmpLE")
+                                {
+                                    if (checkTypeR == 1 && checkLiteral == 1)
+                                    {
+                                        if (this->Register[index1].getDataInt() <= value.getDataInt())
+                                        {
+                                            this->Register[index1].setDataBool(true);
+                                            this->Register[index1].setTypeData(3);
+                                        }
+                                        else
+                                        {
+                                            this->Register[index1].setDataBool(false);
+                                            this->Register[index1].setTypeData(3);
+                                        }
+                                    }
+                                    else if (checkTypeR == 1 && checkLiteral == 2)
+                                    {
+                                        if ((double)(this->Register[index1].getDataInt()) <= value.getDataFloat())
+                                        {
+                                            this->Register[index1].setDataBool(true);
+                                            this->Register[index1].setTypeData(3);
+                                        }
+                                        else
+                                        {
+                                            this->Register[index1].setDataBool(false);
+                                            this->Register[index1].setTypeData(3);
+                                        }
+                                    }
+                                    else if (checkTypeR == 2 && checkLiteral == 1)
+                                    {
+                                        if (this->Register[index1].getDataFloat() <= (double)(value.getDataInt()))
+                                        {
+                                            this->Register[index1].setDataBool(true);
+                                            this->Register[index1].setTypeData(3);
+                                        }
+                                        else
+                                        {
+                                            this->Register[index1].setDataBool(false);
+                                            this->Register[index1].setTypeData(3);
+                                        }
+                                    }
+                                    else if (checkTypeR == 2 && checkLiteral == 2)
+                                    {
+                                        if (this->Register[index1].getDataFloat() <= (value.getDataFloat()))
+                                        {
+                                            this->Register[index1].setDataBool(true);
+                                            this->Register[index1].setTypeData(3);
+                                        }
+                                        else
+                                        {
+                                            this->Register[index1].setDataBool(false);
+                                            this->Register[index1].setTypeData(3);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        int address = this->ip - 1;
+                                        TypeMismatch e = TypeMismatch(address);
+                                        throw e;
+                                    }
+                                }
+                                else if (opcode == "CmpGT")
+                                {
+                                    if (checkTypeR == 1 && checkLiteral == 1)
+                                    {
+                                        if (this->Register[index1].getDataInt() > value.getDataInt())
+                                        {
+                                            this->Register[index1].setDataBool(true);
+                                            this->Register[index1].setTypeData(3);
+                                        }
+                                        else
+                                        {
+                                            this->Register[index1].setDataBool(false);
+                                            this->Register[index1].setTypeData(3);
+                                        }
+                                    }
+                                    else if (checkTypeR == 1 && checkLiteral == 2)
+                                    {
+                                        if ((double)(this->Register[index1].getDataInt()) > value.getDataFloat())
+                                        {
+                                            this->Register[index1].setDataBool(true);
+                                            this->Register[index1].setTypeData(3);
+                                        }
+                                        else
+                                        {
+                                            this->Register[index1].setDataBool(false);
+                                            this->Register[index1].setTypeData(3);
+                                        }
+                                    }
+                                    else if (checkTypeR == 2 && checkLiteral == 1)
+                                    {
+                                        if (this->Register[index1].getDataFloat() > (double)(value.getDataInt()))
+                                        {
+                                            this->Register[index1].setDataBool(true);
+                                            this->Register[index1].setTypeData(3);
+                                        }
+                                        else
+                                        {
+                                            this->Register[index1].setDataBool(false);
+                                            this->Register[index1].setTypeData(3);
+                                        }
+                                    }
+                                    else if (checkTypeR == 2 && checkLiteral == 2)
+                                    {
+                                        if (this->Register[index1].getDataFloat() > (value.getDataFloat()))
+                                        {
+                                            this->Register[index1].setDataBool(true);
+                                            this->Register[index1].setTypeData(3);
+                                        }
+                                        else
+                                        {
+                                            this->Register[index1].setDataBool(false);
+                                            this->Register[index1].setTypeData(3);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        int address = this->ip - 1;
+                                        TypeMismatch e = TypeMismatch(address);
+                                        throw e;
+                                    }
+                                }
+                                else if (opcode == "CmpGE")
+                                {
+                                    if (checkTypeR == 1 && checkLiteral == 1)
+                                    {
+                                        if (this->Register[index1].getDataInt() >= value.getDataInt())
+                                        {
+                                            this->Register[index1].setDataBool(true);
+                                            this->Register[index1].setTypeData(3);
+                                        }
+                                        else
+                                        {
+                                            this->Register[index1].setDataBool(false);
+                                            this->Register[index1].setTypeData(3);
+                                        }
+                                    }
+                                    else if (checkTypeR == 1 && checkLiteral == 2)
+                                    {
+                                        if ((double)(this->Register[index1].getDataInt()) >= value.getDataFloat())
+                                        {
+                                            this->Register[index1].setDataBool(true);
+                                            this->Register[index1].setTypeData(3);
+                                        }
+                                        else
+                                        {
+                                            this->Register[index1].setDataBool(false);
+                                            this->Register[index1].setTypeData(3);
+                                        }
+                                    }
+                                    else if (checkTypeR == 2 && checkLiteral == 1)
+                                    {
+                                        if (this->Register[index1].getDataFloat() >= (double)(value.getDataInt()))
+                                        {
+                                            this->Register[index1].setDataBool(true);
+                                            this->Register[index1].setTypeData(3);
+                                        }
+                                        else
+                                        {
+                                            this->Register[index1].setDataBool(false);
+                                            this->Register[index1].setTypeData(3);
+                                        }
+                                    }
+                                    else if (checkTypeR == 2 && checkLiteral == 2)
+                                    {
+                                        if (this->Register[index1].getDataFloat() >= (value.getDataFloat()))
+                                        {
+                                            this->Register[index1].setDataBool(true);
+                                            this->Register[index1].setTypeData(3);
+                                        }
+                                        else
+                                        {
+                                            this->Register[index1].setDataBool(false);
+                                            this->Register[index1].setTypeData(3);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        int address = this->ip - 1;
+                                        TypeMismatch e = TypeMismatch(address);
+                                        throw e;
+                                    }
+                                }
+                            }
+                        } //else if !R
+                    }     //check space false
+                }         //check Op2
+                else
+                {
+                    int address = this->ip - 1;
+                    InvalidInstruction e = InvalidInstruction(address);
+                    throw e;
+                    break;
+                }
+            } //check Op1
+            else
+
+            {
+                int address = this->ip - 1;
+                InvalidOperand e = InvalidOperand(address);
+                throw e;
+                break;
+            }
+            cout<<this->Register[0].getDataBool()<<endl<<Register[0].getDataInt()<<endl<<Register[0].getDataFloat()<<endl<<"Type: "<<Register[0].getTypeData()<<endl;
         }
-        // else if (1)
-        // {
-        // }
+
         else
         {
             int address = this->ip - 1;
             InvalidInstruction e = InvalidInstruction(address);
             throw e;
             break;
-        } //Check OpCode
-    }     //while loop
-};
+        }
+    } //Else if sum of opcode
+
+}; //while loop
+
 Instruction Instruction::getElementInstruction(string str)
 {
     //erase '\r'

@@ -9,7 +9,7 @@ int pow(int base, int exp);
 string eraseChar(string str, char c);
 string eraseCharAtIndex(string str, int index);
 int checkRegister(string string, int sizeOfString);
-int checkOperand2_Arithmetic(string str, DataStorage& value);
+int checkOperand2(string str, DataStorage& value);
 int countNCode(string filename);
 class DataStorage
 {
@@ -18,16 +18,21 @@ private:
 
 private:
 	int dataInt;
-	float dataFloat;
+	double dataFloat;
 	bool dataBool;
 	int checkType;
+	// 0 default;
+	// 1 int
+	// 2 float
+	// 3 boolean
+	//4 Address;
 
 public:
 	DataStorage();
 	int getDataInt();
 	void setDataInt(int data);
-	float getDataFloat();
-	void setDataFloat(float data);
+	double getDataFloat();
+	void setDataFloat(double data);
 	bool getDataBool();
 	void setDataBool(bool data);
 	int getTypeData();
