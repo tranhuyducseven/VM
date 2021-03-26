@@ -7,7 +7,6 @@ int pow(int base, int exp)
     else
         return base * pow(base, exp - 1);
 }
-
 ///////////
 string eraseChar(string str, char c)
 {
@@ -104,55 +103,20 @@ bool checkSpace(string str)
 }
 int checkOperand2_Arithmetic(string str, DataStorage &value)
 {
+    //return -1 when wrong
+    //flag==1 int
+    //flag==2 float
     int length = str.length();
-    int flag = 0;
+    int flag = 1;
     int i;
     for (i = 0; i < length; i++)
-    {
-        if (str[i] == '/')
-        {
-            flag = 1;
-            break;
-        }
-        else if (str[i] == '.')
+    {       
+       if (str[i] == '.')
         {
             flag = 2;
             break;
         }
-    }
-    if (flag == 1)
-    {
-        int numerator = 0;
-        for (int j = 0; j < i; j++)
-        {
-            if (str[j] >= '0' && str[j] <= '9')
-            {
-                numerator += (int)(str[j]) * pow(10, i - j - 1);
-            }
-            else
-                return -1;
-        }
-        int denominator = 0;
-        for (int j = i + 1; j < length; j++)
-        {
-            if (str[j] >= '0' && str[j] <= '9')
-            {
-                denominator += (int)(str[j]) * pow(10, length - j - 1);
-            }
-            else
-                return -1;
-        }
-        if (numerator % denominator == 0)
-        {
-            value.setDataInt(numerator / denominator);
-            value.setTypeData(1);
-            return 1;
-        }
-        else
-        {
-            return -1;
-        }
-    }
+    }    
     if (flag == 2)
     {
         float num = 0;
@@ -160,44 +124,49 @@ int checkOperand2_Arithmetic(string str, DataStorage &value)
         {
             if (str[j] >= '0' && str[j] <= '9')
             {
-                num += (float)((int)(str[j]) * pow(10, i - j - 1));
+                float temp = (float)(((int)(str[j]) -48)) ;
+                num += temp * pow(10, i - j - 1);
             }
             else
-                return -1;
+                return 0;
         }
-
-        for (int j = i + 1; j < length; j++)
+        int k =i+1;
+        for (k; k< length; k++)
         {
-            if (str[j] >= '0' && str[j] <= '9')
+            if (str[k] >= '0' && str[k] <= '9')
             {
-                num += (int)(str[j]) / pow(10, j + i - length);
+                float temp= (float)(((int)(str[k]) -48)) ;
+                int exp= k+ i +1 - length;
+                num += temp / pow(10,exp);
             }
             else
-                return -1;
+                return 0;
         }
         value.setDataFloat(num);
         value.setTypeData(2);
         return 2;
     }
-    else
+    else 
     {
         int num = 0;
-        for (int j = 0; j < length; j++)
+        int t=0;
+        for (t; t< length; t++)
         {
-            if (str[i] >= '0' && str[j] <= '9')
+            if (str[t] >= '0' && str[t] <= '9')
             {
-                num += (int)(str[j]) * pow(10, length - 2 - j);
+                int exp=length-t-1;
+                num += ((int)(str[t]) -48) * pow(10, exp);
             }
             else
             {
-                return -1;
+                return 0;
             }
         }
         value.setDataInt(num);
         value.setTypeData(1);
-        return 0;
+        return 1;
     }
-    return -1;
+    return 0;
 }
 // // DataStorage Class
 // /////////////////////////////////////////////////////////
