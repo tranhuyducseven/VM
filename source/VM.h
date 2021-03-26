@@ -26,7 +26,7 @@ public:
 	DataStorage();
 	int getDataInt();
 	void setDataInt(int data);
-	float getDataFLoat();
+	float getDataFloat();
 	void setDataFloat(float data);
 	bool getDataBool();
 	void setDataBool(bool data);

@@ -103,20 +103,20 @@ bool checkSpace(string str)
 }
 int checkOperand2_Arithmetic(string str, DataStorage &value)
 {
-    //return -1 when wrong
+    //return 0 when wrong
     //flag==1 int
-    //flag==2 float
+    //flag==2 Float
     int length = str.length();
     int flag = 1;
     int i;
     for (i = 0; i < length; i++)
-    {       
-       if (str[i] == '.')
+    {
+        if (str[i] == '.')
         {
             flag = 2;
             break;
         }
-    }    
+    }
     if (flag == 2)
     {
         float num = 0;
@@ -124,20 +124,20 @@ int checkOperand2_Arithmetic(string str, DataStorage &value)
         {
             if (str[j] >= '0' && str[j] <= '9')
             {
-                float temp = (float)(((int)(str[j]) -48)) ;
+                float temp = (float)(((int)(str[j]) - 48));
                 num += temp * pow(10, i - j - 1);
             }
             else
                 return 0;
         }
-        int k =i+1;
-        for (k; k< length; k++)
+        int k = i + 1;
+        for (k; k < length; k++)
         {
             if (str[k] >= '0' && str[k] <= '9')
             {
-                float temp= (float)(((int)(str[k]) -48)) ;
-                int exp= k+ i +1 - length;
-                num += temp / pow(10,exp);
+                float temp = (float)(((int)(str[k]) - 48));
+                int exp = k + i + 1 - length;
+                num += temp / pow(10, exp);
             }
             else
                 return 0;
@@ -146,16 +146,16 @@ int checkOperand2_Arithmetic(string str, DataStorage &value)
         value.setTypeData(2);
         return 2;
     }
-    else 
+    else
     {
         int num = 0;
-        int t=0;
-        for (t; t< length; t++)
+        int t = 0;
+        for (t; t < length; t++)
         {
             if (str[t] >= '0' && str[t] <= '9')
             {
-                int exp=length-t-1;
-                num += ((int)(str[t]) -48) * pow(10, exp);
+                int exp = length - t - 1;
+                num += ((int)(str[t]) - 48) * pow(10, exp);
             }
             else
             {
@@ -187,7 +187,7 @@ void DataStorage::setDataInt(int data)
     this->dataInt = data;
     this->checkType = 1;
 }
-float DataStorage::getDataFLoat()
+float DataStorage::getDataFloat()
 {
     return this->dataFloat;
 };
@@ -331,6 +331,8 @@ void VM::run(string filename)
 }
 void VM::cpu()
 {
+    this->Register[1].setDataInt(4);
+    this->Register[0].setDataFloat(3);
     int lengthOfCode = this->nCode;
     while (this->ip < lengthOfCode)
     {
@@ -366,14 +368,11 @@ void VM::cpu()
                             {
                                 int index2 = checkRegister(op2, sizeOp2); //return R index;
                                 if (index2 >= 1 && index2 <= 15)
-
                                 {
                                     index2 = index2 - 1;
-                                     this->Register[index2].setDataInt(1);
-                                     this->Register[index1].setDataFloat(2.5);
                                     int check1 = this->Register[index1].getTypeData();
                                     int check2 = this->Register[index2].getTypeData();
-                                   if (opcode == "Add")
+                                    if (opcode == "Add")
                                     {
                                         if (check1 == 1 && check2 == 1)
                                         {
@@ -390,15 +389,13 @@ void VM::cpu()
                                             this->Register[index1].dataFloat += this->Register[index2].dataInt;
                                             this->Register[index1].setTypeData(2);
                                             this->Register[index1].dataInt = 0;
-                                            cout<<this->Register[index1].getDataFLoat()<<endl;
+                                            cout << this->Register[index1].getDataFloat() << endl;
                                         }
                                         else
                                         {
-                                            //If R[index2].dataType=bool;
                                             int address = this->ip - 1;
-                                            InvalidOperand e = InvalidOperand(address);
+                                            TypeMismatch e = TypeMismatch(address);
                                             throw e;
-                                            break;
                                         }
                                     }
                                     else if (opcode == "Minus")
@@ -418,7 +415,13 @@ void VM::cpu()
                                             this->Register[index1].dataFloat -= this->Register[index2].dataInt;
                                             this->Register[index1].setTypeData(2);
                                             this->Register[index1].dataInt = 0;
-                                            cout<<this->Register[index1].getDataFLoat()<<endl;
+                                            cout << this->Register[index1].getDataFloat() << endl;
+                                        }
+                                        else
+                                        {
+                                            int address = this->ip - 1;
+                                            TypeMismatch e = TypeMismatch(address);
+                                            throw e;
                                         }
                                     }
                                     else if (opcode == "Mul")
@@ -438,38 +441,68 @@ void VM::cpu()
                                             this->Register[index1].dataFloat *= this->Register[index2].dataInt;
                                             this->Register[index1].setTypeData(2);
                                             this->Register[index1].dataInt = 0;
-                                            cout<<this->Register[index1].getDataFLoat()<<endl;
+                                            cout << this->Register[index1].getDataFloat() << endl;
+                                        }
+                                        else
+                                        {
+                                            int address = this->ip - 1;
+                                            TypeMismatch e = TypeMismatch(address);
+                                            throw e;
                                         }
                                     }
                                     else if (opcode == "Div")
                                     {
-                                        if (this->Register[index2].getDataFLoat() == 0.0 || this->Register[index2].getDataInt() == 0)
+
+                                        if (check1 == 1 && check2 == 1)
                                         {
-                                            int address = this->ip - 1;
-                                            DivideByZero e = DivideByZero(address);
-                                            throw e;
-                                            break;
+                                            if (this->Register[index2].getDataInt() == 0)
+                                            {
+                                                int address = this->ip - 1;
+                                                DivideByZero e = DivideByZero(address);
+                                                throw e;
+                                            }
+                                            else
+                                                this->Register[index1].dataInt /= this->Register[index2].dataInt;
+                                        }
+                                        else if (check1 == 1 && check2 == 2)
+                                        {
+                                            if (this->Register[index2].getDataFloat() == 0)
+                                            {
+                                                int address = this->ip - 1;
+                                                DivideByZero e = DivideByZero(address);
+                                                throw e;
+                                            }
+                                            else{
+                                            this->Register[index1].dataFloat = this->Register[index1].dataInt / this->Register[index2].dataFloat;
+                                            this->Register[index1].dataInt = 0;
+                                            this->Register[index1].setTypeData(2);
+                                            }
+                                        }
+                                        else if (check1 == 2 && check2 == 1)
+                                        {
+                                            if (this->Register[index2].getDataInt() == 0)
+                                            {
+                                                int address = this->ip - 1;
+                                                DivideByZero e = DivideByZero(address);
+                                                throw e;
+                                            }
+                                            else
+                                            {
+                                            this->Register[index1].dataFloat /= this->Register[index2].dataInt;
+                                            this->Register[index1].dataInt = 0;
+                                            this->Register[index1].setTypeData(2);                                           
+                                            }
                                         }
                                         else
                                         {
-                                            if (check1 == 1 && check2 == 1)
-                                            {
-                                                this->Register[index1].dataInt += this->Register[index2].dataInt;
-                                            }
-                                            else if (check1 == 1 && check2 == 2)
-                                            {
-                                                this->Register[index1].dataFloat = this->Register[index1].dataInt + this->Register[index2].dataFloat;
-                                                this->Register[index1].dataInt = 0;
-                                                this->Register[index1].setTypeData(2);
-                                            }
-                                            else if (check1 == 2 && check2 == 1)
-                                            {
-                                                this->Register[index1].dataFloat += this->Register[index2].dataInt;
-                                                this->Register[index1].dataInt = 0;
-                                                this->Register[index1].setTypeData(2);
-                                                cout<<this->Register[index1].getDataFLoat()<<endl;
-                                            }
+                                            int address = this->ip - 1;
+                                            TypeMismatch e = TypeMismatch(address);
+                                            throw e;
                                         }
+                                         cout << this->Register[index1].getDataInt() << endl
+                                         << this->Register[index1].getDataFloat() << endl
+                                         << this->Register[index1].getDataBool() << endl<<this->Register[index1].getTypeData()<<endl;
+
                                     }
                                 }
                                 else if (index2 == -1)
@@ -490,23 +523,145 @@ void VM::cpu()
                             else if (op2[0] != 'R')
                             {
                                 DataStorage value;
-                                int check = checkOperand2_Arithmetic(op2, value);
+                                int checkLiteral = checkOperand2_Arithmetic(op2, value);
                                 int checkTypeR = this->Register[index1].getTypeData();
-                                if (check == 0 && checkTypeR == 1)
+                                if (opcode == "Add")
                                 {
-                                    this->Register[index1].dataInt += value.getDataInt();
+                                    if (checkTypeR == 1 && checkLiteral == 1)
+                                    {
+                                        this->Register[index1].dataInt += value.getDataInt();
+                                    }
+                                    else if (checkTypeR == 1 && checkLiteral == 2)
+                                    {
+                                        this->Register[index1].dataFloat = this->Register[index1].dataInt + value.getDataFloat();
+                                        this->Register[index1].dataInt = 0;
+                                        this->Register[index1].setTypeData(2);
+                                    }
+                                    else if (checkTypeR == 2 && checkLiteral == 1)
+                                    {
+                                        this->Register[index1].dataFloat += value.getDataFloat();
+                                        this->Register[index1].setTypeData(2);
+                                        this->Register[index1].dataInt = 0;
+                                    }
+                                    else
+                                    {
+                                        int address = this->ip - 1;
+                                        TypeMismatch e = TypeMismatch(address);
+                                        throw e;
+                                    }
+                                    cout << this->Register[index1].getDataInt() << endl
+                                         << this->Register[index1].getDataFloat() << endl
+                                         << this->Register[index1].getDataBool() << endl;
                                 }
-                                else if (check == 1)
+                                else if (opcode == "Minus")
                                 {
-                                    cout << endl;
+                                    if (checkTypeR == 1 && checkLiteral == 1)
+                                    {
+                                        this->Register[index1].dataInt -= value.getDataInt();
+                                    }
+                                    else if (checkTypeR == 1 && checkLiteral == 2)
+                                    {
+                                        this->Register[index1].dataFloat = this->Register[index1].dataInt - value.getDataFloat();
+                                        this->Register[index1].dataInt = 0;
+                                        this->Register[index1].setTypeData(2);
+                                    }
+                                    else if (checkTypeR == 2 && checkLiteral == 1)
+                                    {
+                                        this->Register[index1].dataFloat -= value.getDataFloat();
+                                        this->Register[index1].setTypeData(2);
+                                        this->Register[index1].dataInt = 0;
+                                    }
+                                    else
+                                    {
+                                        int address = this->ip - 1;
+                                        TypeMismatch e = TypeMismatch(address);
+                                        throw e;
+                                    }
+                                    cout << this->Register[index1].getDataInt() << endl
+                                         << this->Register[index1].getDataFloat() << endl
+                                         << this->Register[index1].getDataBool() << endl;
                                 }
-                                else if (check == 2)
+                                else if (opcode == "Mul")
                                 {
-                                    cout << endl;
+                                    if (checkTypeR == 1 && checkLiteral == 1)
+                                    {
+                                        this->Register[index1].dataInt *= value.getDataInt();
+                                    }
+                                    else if (checkTypeR == 1 && checkLiteral == 2)
+                                    {
+                                        this->Register[index1].dataFloat = this->Register[index1].dataInt * value.getDataFloat();
+                                        this->Register[index1].dataInt = 0;
+                                        this->Register[index1].setTypeData(2);
+                                    }
+                                    else if (checkTypeR == 2 && checkLiteral == 1)
+                                    {
+                                        this->Register[index1].dataFloat *= value.getDataFloat();
+                                        this->Register[index1].setTypeData(2);
+                                        this->Register[index1].dataInt = 0;
+                                    }
+                                    else
+                                    {
+                                        int address = this->ip - 1;
+                                        TypeMismatch e = TypeMismatch(address);
+                                        throw e;
+                                    }
+                                    cout << this->Register[index1].getDataInt() << endl
+                                         << this->Register[index1].getDataFloat() << endl
+                                         << this->Register[index1].getDataBool() << endl;
                                 }
-                                else
+                                else if (opcode == "Div")
                                 {
-                                    cout << endl;
+
+                                    if (checkTypeR == 1 && checkLiteral == 1)
+                                    {
+                                        if (value.getDataInt() == 0)
+                                        {
+                                            int address = this->ip - 1;
+                                            DivideByZero e = DivideByZero(address);
+                                            throw e;
+                                        }
+                                        else
+                                            this->Register[index1].dataInt /= value.getDataInt();
+                                    }
+                                    else if (checkTypeR == 1 && checkLiteral == 2)
+                                    {
+                                        if (value.getDataFloat() == 0)
+                                        {
+                                            int address = this->ip - 1;
+                                            DivideByZero e = DivideByZero(address);
+                                            throw e;
+                                        }
+                                        else
+                                        {
+                                            this->Register[index1].dataFloat = this->Register[index1].dataInt / value.getDataFloat();
+                                            this->Register[index1].dataInt = 0;
+                                            this->Register[index1].setTypeData(2);
+                                        }
+                                    }
+                                    else if (checkTypeR == 2 && checkLiteral == 1)
+                                    {
+                                        if (value.getDataInt() == 0)
+                                        {
+                                            int address = this->ip - 1;
+                                            DivideByZero e = DivideByZero(address);
+                                            throw e;
+                                        }
+                                        else
+                                        {
+                                            this->Register[index1].dataFloat /= value.getDataInt();
+                                            this->Register[index1].dataInt = 0;
+                                            this->Register[index1].setTypeData(2);
+                                        }
+                                        cout << this->Register[index1].getDataInt() << endl
+                                             << this->Register[index1].getDataFloat() << endl
+                                             << this->Register[index1].getDataBool() <<endl<<this->Register[index1].getTypeData()<< endl;
+                                    }
+                                    else
+                                    {
+                                        int address = this->ip - 1;
+                                        TypeMismatch e = TypeMismatch(address);
+                                        throw e;
+                                    }
                                 }
                             }
                         }
@@ -519,14 +674,7 @@ void VM::cpu()
                         break;
                     }
                 }
-                else if (index1 == -1)
-                {
-                    int address = this->ip - 1;
-                    InvalidOperand e = InvalidOperand(address);
-                    throw e;
-                    break;
-                }
-                else
+                 else
                 {
                     int address = this->ip - 1;
                     InvalidOperand e = InvalidOperand(address);
@@ -543,9 +691,9 @@ void VM::cpu()
             }
         }
 
-        // else if (2)
-        // {
-        // }
+        else if (opcode==)
+        {
+        }
         // else if (1)
         // {
         // }
@@ -560,7 +708,7 @@ void VM::cpu()
 };
 Instruction Instruction::getElementInstruction(string str)
 {
-    //Erase '/r'
+    //erase '\r'
     string Code = eraseChar(str, '\r');
     int i = 0;
     while (Code[i] != '\0')
