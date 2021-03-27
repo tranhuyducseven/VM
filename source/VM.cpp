@@ -1894,8 +1894,205 @@ void VM::cpu()
                 break;
             }
         }
-        
+        if (opcode == "Load")
+        {
+            if (temp.getNOperands() == 2)
+            {
+                string op1 = temp.getOp1();
+                int sizeOp1 = op1.length();
+                int index1 = checkRegister(op1, sizeOp1); //return R index;
+                if (index1 >= 1 && index1 <= 15)
+                {
+                    index1 = index1 - 1;
+                    string op2 = temp.getOp2();
+                    if (op2[0] == ' ')
+                    {
+                        op2 = eraseCharAtIndex(op2, 0);
+                        int sizeOp2 = op2.length();
+                        bool check = checkSpace(op2);
+                        if (check == true)
+                        {
+                            int address = this->ip - 1;
+                            InvalidInstruction e = InvalidInstruction(address);
+                            throw e;
+                            break;
+                        }
+                        else
+                        {
+                            if (op2[0] == 'R')
+                            {
+                                int index2 = checkRegister(op2, sizeOp2); //return R index;
+                                if (index2 >= 1 && index2 <= 15)
+                                {
+                                    index2 = index2 - 1;
+                                    int check2 = this->Register[index2].getTypeData();
+                                    if (check2 == 4)
+                                    {
+                                        int address = this->Register[index2].getAddress();
+                                        if (address > 65535 && address < 0)
+                                        {
+                                            int address = this->ip - 1;
+                                            TypeMismatch e = TypeMismatch(address);
+                                            throw e;
+                                        }
+                                        else
+                                        {
+                                            DataStorage value = this->staticMemory[address];
+                                            int checkValueOfSrc = value.getTypeData();
+                                            if (checkValueOfSrc == 1)
+                                            {
+                                                this->Register[index1].setDataInt(value.getDataInt());
+                                                this->Register[index1].setDataFloat(0);
+                                                this->Register[index1].setDataBool(false);
+                                                this->Register[index1].setAddress(0);
+                                                this->Register[index1].setTypeData(1);
+                                            }
+                                            else if (checkValueOfSrc == 2)
+                                            {
+                                                this->Register[index1].setDataFloat(value.getDataFloat());
+                                                this->Register[index1].setDataInt(0);
+                                                this->Register[index1].setDataBool(false);
+                                                this->Register[index1].setAddress(0);
+                                                this->Register[index1].setTypeData(2);
+                                            }
+                                            else if (checkValueOfSrc == 3)
+                                            {
+                                                this->Register[index1].setDataBool(value.getDataBool());
+                                                this->Register[index1].setDataFloat(0);
+                                                this->Register[index1].setDataInt(0);
+                                                this->Register[index1].setAddress(0);
+                                                this->Register[index1].setTypeData(3);
+                                            }
+                                            else if (checkValueOfSrc == 4)
+                                            {
+                                                this->Register[index1].setAddress(value.getAddress());
+                                                this->Register[index1].setDataFloat(0);
+                                                this->Register[index1].setDataInt(0);
+                                                this->Register[index1].setDataBool(false);
+                                                this->Register[index1].setTypeData(4);
+                                            }
 
+                                            else
+                                            {
+                                                int address = this->ip - 1;
+                                                TypeMismatch e = TypeMismatch(address);
+                                                throw e;
+                                            }
+                                        }
+                                    }
+                                    else
+                                    {
+                                        int address = this->ip - 1;
+                                        TypeMismatch e = TypeMismatch(address);
+                                        throw e;
+                                    }
+                                }
+                                else
+                                {
+                                    int address = this->ip - 1;
+                                    InvalidOperand e = InvalidOperand(address);
+                                    throw e;
+                                    break;
+                                }
+                            }
+                            else if (op2[0] != 'R')
+                            {
+                                DataStorage value;
+                                int checkLiteral = checkOperand2(op2, value);
+                                int address = value.getAddress();
+                                if (checkLiteral == 4)
+                                {
+
+                                    if (address > 65535 && address < 0)
+                                    {
+                                        int address = this->ip - 1;
+                                        TypeMismatch e = TypeMismatch(address);
+                                        throw e;
+                                    }
+
+                                    else
+                                    {
+                                        DataStorage temp = this->staticMemory[address];
+                                        int checkValueOfSrc = value.getTypeData();
+                                        if (checkValueOfSrc == 1)
+                                        {
+                                            this->Register[index1].setDataInt(temp.getDataInt());
+                                            this->Register[index1].setDataFloat(0);
+                                            this->Register[index1].setDataBool(false);
+                                            this->Register[index1].setAddress(0);
+                                            this->Register[index1].setTypeData(1);
+                                        }
+                                        else if (checkValueOfSrc == 2)
+                                        {
+                                            this->Register[index1].setDataFloat(temp.getDataFloat());
+                                            this->Register[index1].setDataInt(0);
+                                            this->Register[index1].setDataBool(false);
+                                            this->Register[index1].setAddress(0);
+                                            this->Register[index1].setTypeData(2);
+                                        }
+                                        else if (checkValueOfSrc == 3)
+                                        {
+                                            this->Register[index1].setDataBool(temp.getDataBool());
+                                            this->Register[index1].setDataFloat(0);
+                                            this->Register[index1].setDataInt(0);
+                                            this->Register[index1].setAddress(0);
+                                            this->Register[index1].setTypeData(3);
+                                        }
+                                        else if (checkValueOfSrc == 4)
+                                        {
+                                            this->Register[index1].setAddress(temp.getAddress());
+                                            this->Register[index1].setDataFloat(0);
+                                            this->Register[index1].setDataInt(0);
+                                            this->Register[index1].setDataBool(false);
+                                            this->Register[index1].setTypeData(4);
+                                        }
+
+                                        else
+                                        {
+                                            int address = this->ip - 1;
+                                            TypeMismatch e = TypeMismatch(address);
+                                            throw e;
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    int address = this->ip - 1;
+                                    TypeMismatch e = TypeMismatch(address);
+                                    throw e;
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        int address = this->ip - 1;
+                        InvalidOperand e = InvalidOperand(address);
+                        throw e;
+                        break;
+                    }
+                }
+                else
+                {
+                    int address = this->ip - 1;
+                    InvalidOperand e = InvalidOperand(address);
+                    throw e;
+                    break;
+                }
+            }
+
+            else
+            {
+                int address = this->ip - 1;
+                InvalidInstruction e = InvalidInstruction(address);
+                throw e;
+                break;
+            }
+        }
+        else if (opcode == "Store")
+        {
+            cout << "store: " << endl;
+        }
         //main opcode
         else
         {
