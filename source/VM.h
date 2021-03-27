@@ -9,7 +9,7 @@ int pow(int base, int exp);
 string eraseChar(string str, char c);
 string eraseCharAtIndex(string str, int index);
 int checkRegister(string string, int sizeOfString);
-int checkOperand2(string str, DataStorage& value);
+int checkOperand2(string str, DataStorage &value);
 int countNCode(string filename);
 class DataStorage
 {
@@ -26,6 +26,7 @@ private:
 	// 2 float
 	// 3 boolean
 	//4 Address;
+	int dataAddress;
 
 public:
 	DataStorage();
@@ -35,6 +36,8 @@ public:
 	void setDataFloat(double data);
 	bool getDataBool();
 	void setDataBool(bool data);
+	int getAddress();
+	void setAddress(int);
 	int getTypeData();
 	void setTypeData(int check);
 	~DataStorage();
@@ -64,18 +67,18 @@ class VM
 {
 
 private:
-	string* codes;
-	int* stack;
-	DataStorage* staticMemory;
-	DataStorage* Register;
+	string *codes;
+	int *stack;
+	DataStorage *staticMemory;
+	DataStorage *Register;
 	int nCode;
 	int ip;
 	int sp;
-	Instruction* instr;
+	Instruction *instr;
 
 public:
 	VM();
-	VM(Instruction* instr, int ip, int nCode);
+	VM(Instruction *instr, int ip, int nCode);
 	void run(string filename);
 	void readCode(string filename);
 	void cpu();
