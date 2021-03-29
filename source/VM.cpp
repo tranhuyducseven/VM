@@ -414,9 +414,7 @@ void VM::cpu()
                 break;
             }
         }
-        else if(){
-             
-        }
+       
         else
         {
              bool checkLoadingError = true;
