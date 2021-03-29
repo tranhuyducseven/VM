@@ -21,7 +21,7 @@ private:
 	double dataFloat;
 	bool dataBool;
 	int checkType;
-	// 0 default;
+	// 0 default=error
 	// 1 int
 	// 2 float
 	// 3 boolean

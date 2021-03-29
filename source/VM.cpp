@@ -395,8 +395,40 @@ void VM::run(string filename)
 }
 void VM::cpu()
 {
-    this->Register[0].setDataInt(5);
-    this->Register[1].setDataFloat(6.4);
+
+    bool checkLoadingError = false;
+    int lengthOfCode1 = this->nCode;
+    while (this->ip < lengthOfCode1)
+    {
+        Instruction temp = this->instr[ip];
+        string opcode = temp.getNameOpcode();
+        if (opcode == "Add" || opcode == "Minus" || opcode == "Mul" || opcode == "Div")
+        {
+            if (temp.getNOperands() != 2)
+            {
+                bool checkLoadingError = true;
+
+                int addressError = this->ip - 1;
+                InvalidInstruction e = InvalidInstruction(addressError);
+                throw e;
+                break;
+            }
+        }
+        else if(){
+             
+        }
+        else
+        {
+             bool checkLoadingError = true;
+            int addressError = this->ip - 1;
+            InvalidInstruction e = InvalidInstruction(addressError);
+            throw e;
+            break;
+        }
+
+        this->ip++;
+    }
+
     int lengthOfCode = this->nCode;
     while (this->ip < lengthOfCode)
     {
@@ -406,424 +438,214 @@ void VM::cpu()
 
         if (opcode == "Add" || opcode == "Minus" || opcode == "Mul" || opcode == "Div")
         {
-            if (temp.getNOperands() == 2)
+
+            string op1 = temp.getOp1();
+            int sizeOp1 = op1.length();
+            int index1 = checkRegister(op1, sizeOp1); //return R index;
+            if (index1 >= 1 && index1 <= 15)
             {
-                string op1 = temp.getOp1();
-                int sizeOp1 = op1.length();
-                int index1 = checkRegister(op1, sizeOp1); //return R index;
-                if (index1 >= 1 && index1 <= 15)
+                index1 = index1 - 1;
+                string op2 = temp.getOp2();
+                if (op2[0] == ' ')
                 {
-                    index1 = index1 - 1;
-                    string op2 = temp.getOp2();
-                    if (op2[0] == ' ')
+                    op2 = eraseCharAtIndex(op2, 0);
+                    int sizeOp2 = op2.length();
+                    bool check = checkSpace(op2);
+                    if (check == true)
                     {
-                        op2 = eraseCharAtIndex(op2, 0);
-                        int sizeOp2 = op2.length();
-                        bool check = checkSpace(op2);
-                        if (check == true)
+                        int addressError = this->ip - 1;
+                        InvalidInstruction e = InvalidInstruction(addressError);
+                        throw e;
+                        break;
+                    }
+                    else
+                    {
+                        if (op2[0] == 'R')
                         {
-                            int address = this->ip - 1;
-                            InvalidInstruction e = InvalidInstruction(address);
-                            throw e;
-                            break;
-                        }
-                        else
-                        {
-                            if (op2[0] == 'R')
+                            int index2 = checkRegister(op2, sizeOp2); //return R index;
+                            if (index2 >= 1 && index2 <= 15)
                             {
-                                int index2 = checkRegister(op2, sizeOp2); //return R index;
-                                if (index2 >= 1 && index2 <= 15)
-                                {
-                                    index2 = index2 - 1;
-                                    int check1 = this->Register[index1].getTypeData();
-                                    int check2 = this->Register[index2].getTypeData();
-                                    if (opcode == "Add")
-                                    {
-                                        if (check1 == 1 && check2 == 1)
-                                        {
-                                            int data = this->Register[index2].getDataInt();
-                                            this->Register[index1].setDataInt(this->Register[index1].getDataInt() + data);
-                                        }
-                                        else if (check1 == 1 && check2 == 2)
-                                        {
-                                            double data = this->Register[index2].getDataFloat();
-                                            this->Register[index1].setDataFloat(this->Register[index1].getDataInt() + data);
-                                        }
-                                        else if (check1 == 2 && check2 == 1)
-                                        {
-                                            int data = this->Register[index2].getDataInt();
-                                            this->Register[index1].setDataFloat(this->Register[index1].getDataFloat() + data);
-                                        }
-                                        else if (check1 == 2 && check2 == 2)
-                                        {
-                                            double data = this->Register[index2].getDataFloat();
-                                            this->Register[index1].setDataFloat(this->Register[index1].getDataFloat() + data);
-                                        }
-                                        else if (check2 == 0)
-                                        {
-
-                                            int address = this->ip - 1;
-                                            InvalidOperand e = InvalidOperand(address);
-                                            throw e;
-                                            break;
-                                        }
-                                        else
-                                        {
-                                            int address = this->ip - 1;
-                                            InvalidOperand e = InvalidOperand(address);
-                                            throw e;
-                                            break;
-                                        }
-                                    }
-                                    else if (opcode == "Minus")
-                                    {
-                                        if (check1 == 1 && check2 == 1)
-                                        {
-                                            int data = this->Register[index2].getDataInt();
-                                            this->Register[index1].setDataInt(this->Register[index1].getDataInt() - data);
-                                        }
-                                        else if (check1 == 1 && check2 == 2)
-                                        {
-                                            double data = this->Register[index2].getDataFloat();
-                                            this->Register[index1].setDataFloat(this->Register[index1].getDataInt() - data);
-                                        }
-                                        else if (check1 == 2 && check2 == 1)
-                                        {
-                                            int data = this->Register[index2].getDataInt();
-                                            this->Register[index1].setDataFloat(this->Register[index1].getDataFloat() - data);
-                                        }
-                                        else if (check1 == 2 && check2 == 2)
-                                        {
-                                            double data = this->Register[index2].getDataFloat();
-                                            this->Register[index1].setDataFloat(this->Register[index1].getDataFloat() - data);
-                                        }
-                                        else if (check2 == 0)
-                                        {
-
-                                            int address = this->ip - 1;
-                                            InvalidOperand e = InvalidOperand(address);
-                                            throw e;
-                                            break;
-                                        }
-                                        else
-                                        {
-                                            int address = this->ip - 1;
-                                            InvalidOperand e = InvalidOperand(address);
-                                            throw e;
-                                            break;
-                                        }
-                                    }
-                                    else if (opcode == "Mul")
-                                    {
-                                        if (check1 == 1 && check2 == 1)
-                                        {
-                                            int data = this->Register[index2].getDataInt();
-                                            this->Register[index1].setDataInt(this->Register[index1].getDataInt() * data);
-                                        }
-                                        else if (check1 == 1 && check2 == 2)
-                                        {
-                                            double data = this->Register[index2].getDataFloat();
-                                            this->Register[index1].setDataFloat(this->Register[index1].getDataInt() * data);
-                                        }
-                                        else if (check1 == 2 && check2 == 1)
-                                        {
-                                            int data = this->Register[index2].getDataInt();
-                                            this->Register[index1].setDataFloat(this->Register[index1].getDataFloat() * data);
-                                        }
-                                        else if (check1 == 2 && check2 == 2)
-                                        {
-                                            double data = this->Register[index2].getDataFloat();
-                                            this->Register[index1].setDataFloat(this->Register[index1].getDataFloat() * data);
-                                        }
-                                        else if (check2 == 0)
-                                        {
-
-                                            int address = this->ip - 1;
-                                            InvalidOperand e = InvalidOperand(address);
-                                            throw e;
-                                            break;
-                                        }
-                                        else
-                                        {
-                                            int address = this->ip - 1;
-                                            InvalidOperand e = InvalidOperand(address);
-                                            throw e;
-                                            break;
-                                        }
-                                    }
-                                    else if (opcode == "Div")
-                                    {
-
-                                        if (check1 == 1 && check2 == 1)
-                                        {
-                                            if (this->Register[index2].getDataInt() == 0)
-                                            {
-                                                int address = this->ip - 1;
-                                                DivideByZero e = DivideByZero(address);
-                                                throw e;
-                                                break;
-                                            }
-                                            else
-                                            {
-                                                int data = this->Register[index2].getDataInt();
-                                                this->Register[index1].setDataInt(this->Register[index1].getDataInt() / data);
-                                            }
-                                        }
-                                        else if (check1 == 1 && check2 == 2)
-                                        {
-                                            if (this->Register[index2].getDataFloat() == 0)
-                                            {
-                                                int address = this->ip - 1;
-                                                DivideByZero e = DivideByZero(address);
-                                                throw e;
-                                                break;
-                                            }
-                                            else
-                                            {
-                                                double data = this->Register[index2].getDataFloat();
-                                                this->Register[index1].setDataFloat(this->Register[index1].getDataInt() / data);
-                                            }
-                                        }
-                                        else if (check1 == 2 && check2 == 1)
-                                        {
-                                            if (this->Register[index2].getDataInt() == 0)
-                                            {
-                                                int address = this->ip - 1;
-                                                DivideByZero e = DivideByZero(address);
-                                                throw e;
-                                                break;
-                                            }
-                                            else
-                                            {
-                                                int data = this->Register[index2].getDataInt();
-                                                this->Register[index1].setDataFloat(this->Register[index1].getDataFloat() / data);
-                                            }
-                                        }
-                                        else if (check1 == 2 && check2 == 2)
-                                        {
-                                            if (this->Register[index2].getDataFloat() == 0)
-                                            {
-                                                int address = this->ip - 1;
-                                                DivideByZero e = DivideByZero(address);
-                                                throw e;
-                                                break;
-                                            }
-                                            else
-                                            {
-                                                double data = this->Register[index2].getDataFloat();
-                                                this->Register[index1].setDataFloat(this->Register[index1].getDataFloat() / data);
-                                            }
-                                        }
-                                        else if (check2 == 0)
-                                        {
-
-                                            int address = this->ip - 1;
-                                            InvalidOperand e = InvalidOperand(address);
-                                            throw e;
-                                            break;
-                                        }
-
-                                        else
-                                        {
-                                            int address = this->ip - 1;
-                                            InvalidOperand e = InvalidOperand(address);
-                                            throw e;
-                                            break;
-                                        }
-                                    }
-                                }
-                                else
-                                {
-                                    int address = this->ip - 1;
-                                    InvalidOperand e = InvalidOperand(address);
-                                    throw e;
-                                    break;
-                                }
-                            }
-                            else if (op2[0] != 'R')
-                            {
-                                DataStorage value;
-                                int checkLiteral = checkOperand2(op2, value);
-                                int checkTypeR = this->Register[index1].getTypeData();
+                                index2 = index2 - 1;
+                                int check1 = this->Register[index1].getTypeData();
+                                int check2 = this->Register[index2].getTypeData();
                                 if (opcode == "Add")
                                 {
-                                    if (checkTypeR == 1 && checkLiteral == 1)
+                                    if (check1 == 1 && check2 == 1)
                                     {
-                                        int data = value.getDataInt();
-                                        this->Register[index1].setDataInt(value.getDataInt() + data);
+                                        int data = this->Register[index2].getDataInt();
+                                        this->Register[index1].setDataInt(this->Register[index1].getDataInt() + data);
                                     }
-                                    else if (checkTypeR == 1 && checkLiteral == 2)
+                                    else if (check1 == 1 && check2 == 2)
                                     {
-                                        double data = value.getDataFloat();
-                                        this->Register[index1].setDataFloat(value.getDataInt() + data);
+                                        double data = this->Register[index2].getDataFloat();
+                                        this->Register[index1].setDataFloat(this->Register[index1].getDataInt() + data);
                                     }
-                                    else if (checkTypeR == 2 && checkLiteral == 1)
+                                    else if (check1 == 2 && check2 == 1)
                                     {
-                                        int data = value.getDataInt();
-                                        this->Register[index1].setDataFloat(value.getDataFloat() + data);
+                                        int data = this->Register[index2].getDataInt();
+                                        this->Register[index1].setDataFloat(this->Register[index1].getDataFloat() + data);
                                     }
-                                    else if (checkTypeR == 2 && checkLiteral == 2)
+                                    else if (check1 == 2 && check2 == 2)
                                     {
-                                        double data = value.getDataFloat();
-                                        this->Register[index1].setDataFloat(value.getDataFloat() + data);
+                                        double data = this->Register[index2].getDataFloat();
+                                        this->Register[index1].setDataFloat(this->Register[index1].getDataFloat() + data);
                                     }
-                                    else if (checkLiteral == 0)
+                                    else if (check2 == 0)
                                     {
 
-                                        int address = this->ip - 1;
-                                        InvalidOperand e = InvalidOperand(address);
+                                        int addressError = this->ip - 1;
+                                        InvalidOperand e = InvalidOperand(addressError);
                                         throw e;
                                         break;
                                     }
-
                                     else
                                     {
-                                        int address = this->ip - 1;
-                                        InvalidOperand e = InvalidOperand(address);
+                                        int addressError = this->ip - 1;
+                                        InvalidOperand e = InvalidOperand(addressError);
                                         throw e;
                                         break;
                                     }
                                 }
                                 else if (opcode == "Minus")
                                 {
-                                    if (checkTypeR == 1 && checkLiteral == 1)
+                                    if (check1 == 1 && check2 == 1)
                                     {
-                                        int data = value.getDataInt();
-                                        this->Register[index1].setDataInt(value.getDataInt() - data);
+                                        int data = this->Register[index2].getDataInt();
+                                        this->Register[index1].setDataInt(this->Register[index1].getDataInt() - data);
                                     }
-                                    else if (checkTypeR == 1 && checkLiteral == 2)
+                                    else if (check1 == 1 && check2 == 2)
                                     {
-                                        double data = value.getDataFloat();
-                                        this->Register[index1].setDataFloat(value.getDataInt() - data);
+                                        double data = this->Register[index2].getDataFloat();
+                                        this->Register[index1].setDataFloat(this->Register[index1].getDataInt() - data);
                                     }
-                                    else if (checkTypeR == 2 && checkLiteral == 1)
+                                    else if (check1 == 2 && check2 == 1)
                                     {
-                                        int data = value.getDataInt();
-                                        this->Register[index1].setDataFloat(value.getDataFloat() - data);
+                                        int data = this->Register[index2].getDataInt();
+                                        this->Register[index1].setDataFloat(this->Register[index1].getDataFloat() - data);
                                     }
-                                    else if (checkTypeR == 2 && checkLiteral == 2)
+                                    else if (check1 == 2 && check2 == 2)
                                     {
-                                        double data = value.getDataFloat();
-                                        this->Register[index1].setDataFloat(value.getDataFloat() - data);
+                                        double data = this->Register[index2].getDataFloat();
+                                        this->Register[index1].setDataFloat(this->Register[index1].getDataFloat() - data);
                                     }
-                                    else if (checkLiteral == 0)
+                                    else if (check2 == 0)
                                     {
 
-                                        int address = this->ip - 1;
-                                        InvalidOperand e = InvalidOperand(address);
+                                        int addressError = this->ip - 1;
+                                        InvalidOperand e = InvalidOperand(addressError);
                                         throw e;
                                         break;
                                     }
-
                                     else
                                     {
-                                        int address = this->ip - 1;
-                                        InvalidOperand e = InvalidOperand(address);
+                                        int addressError = this->ip - 1;
+                                        InvalidOperand e = InvalidOperand(addressError);
                                         throw e;
                                         break;
                                     }
                                 }
                                 else if (opcode == "Mul")
                                 {
-                                    if (checkTypeR == 1 && checkLiteral == 1)
+                                    if (check1 == 1 && check2 == 1)
                                     {
-                                        int data = value.getDataInt();
-                                        this->Register[index1].setDataInt(value.getDataInt() * data);
+                                        int data = this->Register[index2].getDataInt();
+                                        this->Register[index1].setDataInt(this->Register[index1].getDataInt() * data);
                                     }
-                                    else if (checkTypeR == 1 && checkLiteral == 2)
+                                    else if (check1 == 1 && check2 == 2)
                                     {
-                                        double data = value.getDataFloat();
-                                        this->Register[index1].setDataFloat(value.getDataInt() * data);
+                                        double data = this->Register[index2].getDataFloat();
+                                        this->Register[index1].setDataFloat(this->Register[index1].getDataInt() * data);
                                     }
-                                    else if (checkTypeR == 2 && checkLiteral == 1)
+                                    else if (check1 == 2 && check2 == 1)
                                     {
-                                        int data = value.getDataInt();
-                                        this->Register[index1].setDataFloat(value.getDataFloat() * data);
+                                        int data = this->Register[index2].getDataInt();
+                                        this->Register[index1].setDataFloat(this->Register[index1].getDataFloat() * data);
                                     }
-                                    else if (checkTypeR == 2 && checkLiteral == 2)
+                                    else if (check1 == 2 && check2 == 2)
                                     {
-                                        double data = value.getDataFloat();
-                                        this->Register[index1].setDataFloat(value.getDataFloat() * data);
+                                        double data = this->Register[index2].getDataFloat();
+                                        this->Register[index1].setDataFloat(this->Register[index1].getDataFloat() * data);
                                     }
-                                    else if (checkLiteral == 0)
+                                    else if (check2 == 0)
                                     {
 
-                                        int address = this->ip - 1;
-                                        InvalidOperand e = InvalidOperand(address);
+                                        int addressError = this->ip - 1;
+                                        InvalidOperand e = InvalidOperand(addressError);
                                         throw e;
                                         break;
                                     }
                                     else
                                     {
-                                        int address = this->ip - 1;
-                                        InvalidOperand e = InvalidOperand(address);
+                                        int addressError = this->ip - 1;
+                                        InvalidOperand e = InvalidOperand(addressError);
                                         throw e;
                                         break;
                                     }
                                 }
                                 else if (opcode == "Div")
                                 {
-                                    if (checkTypeR == 1 && checkLiteral == 1)
+
+                                    if (check1 == 1 && check2 == 1)
                                     {
-                                        if (value.getDataInt() == 0)
+                                        if (this->Register[index2].getDataInt() == 0)
                                         {
-                                            int address = this->ip - 1;
-                                            DivideByZero e = DivideByZero(address);
+                                            int addressError = this->ip - 1;
+                                            DivideByZero e = DivideByZero(addressError);
                                             throw e;
                                             break;
                                         }
                                         else
                                         {
-                                            int data = value.getDataInt();
-                                            this->Register[index1].setDataInt(value.getDataInt() / data);
+                                            int data = this->Register[index2].getDataInt();
+                                            this->Register[index1].setDataInt(this->Register[index1].getDataInt() / data);
                                         }
                                     }
-                                    else if (checkTypeR == 1 && checkLiteral == 2)
+                                    else if (check1 == 1 && check2 == 2)
                                     {
-                                        if (value.getDataFloat() == 0)
+                                        if (this->Register[index2].getDataFloat() == 0)
                                         {
-                                            int address = this->ip - 1;
-                                            DivideByZero e = DivideByZero(address);
+                                            int addressError = this->ip - 1;
+                                            DivideByZero e = DivideByZero(addressError);
                                             throw e;
                                             break;
                                         }
                                         else
                                         {
-                                            double data = value.getDataFloat();
-                                            this->Register[index1].setDataFloat(value.getDataInt() / data);
+                                            double data = this->Register[index2].getDataFloat();
+                                            this->Register[index1].setDataFloat(this->Register[index1].getDataInt() / data);
                                         }
                                     }
-                                    else if (checkTypeR == 2 && checkLiteral == 1)
+                                    else if (check1 == 2 && check2 == 1)
                                     {
-                                        if (value.getDataInt() == 0)
+                                        if (this->Register[index2].getDataInt() == 0)
                                         {
-                                            int address = this->ip - 1;
-                                            DivideByZero e = DivideByZero(address);
+                                            int addressError = this->ip - 1;
+                                            DivideByZero e = DivideByZero(addressError);
                                             throw e;
                                             break;
                                         }
                                         else
                                         {
-                                            int data = value.getDataInt();
-                                            this->Register[index1].setDataFloat(value.getDataFloat() / data);
+                                            int data = this->Register[index2].getDataInt();
+                                            this->Register[index1].setDataFloat(this->Register[index1].getDataFloat() / data);
                                         }
                                     }
-                                    else if (checkTypeR == 2 && checkLiteral == 2)
+                                    else if (check1 == 2 && check2 == 2)
                                     {
-                                        if (value.getDataFloat() == 0)
+                                        if (this->Register[index2].getDataFloat() == 0)
                                         {
-                                            int address = this->ip - 1;
-                                            DivideByZero e = DivideByZero(address);
+                                            int addressError = this->ip - 1;
+                                            DivideByZero e = DivideByZero(addressError);
                                             throw e;
                                             break;
                                         }
                                         else
                                         {
-                                            double data = value.getDataFloat();
-                                            this->Register[index1].setDataFloat(value.getDataFloat() / data);
+                                            double data = this->Register[index2].getDataFloat();
+                                            this->Register[index1].setDataFloat(this->Register[index1].getDataFloat() / data);
                                         }
                                     }
-                                    else if (checkLiteral == 0)
+                                    else if (check2 == 0)
                                     {
 
                                         int address = this->ip - 1;
@@ -834,35 +656,236 @@ void VM::cpu()
 
                                     else
                                     {
-                                        int address = this->ip - 1;
-                                        InvalidOperand e = InvalidOperand(address);
+                                        int addressError = this->ip - 1;
+                                        InvalidOperand e = InvalidOperand(addressError);
                                         throw e;
                                         break;
                                     }
                                 }
                             }
+                            else
+                            {
+                                int addressError = this->ip - 1;
+                                InvalidOperand e = InvalidOperand(addressError);
+                                throw e;
+                                break;
+                            }
                         }
-                    }
-                    else
-                    {
-                        int address = this->ip - 1;
-                        InvalidOperand e = InvalidOperand(address);
-                        throw e;
-                        break;
+                        else if (op2[0] != 'R')
+                        {
+                            DataStorage value;
+                            int checkLiteral = checkOperand2(op2, value);
+                            int checkTypeR = this->Register[index1].getTypeData();
+                            if (opcode == "Add")
+                            {
+                                if (checkTypeR == 1 && checkLiteral == 1)
+                                {
+                                    int data = value.getDataInt();
+                                    this->Register[index1].setDataInt(value.getDataInt() + data);
+                                }
+                                else if (checkTypeR == 1 && checkLiteral == 2)
+                                {
+                                    double data = value.getDataFloat();
+                                    this->Register[index1].setDataFloat(value.getDataInt() + data);
+                                }
+                                else if (checkTypeR == 2 && checkLiteral == 1)
+                                {
+                                    int data = value.getDataInt();
+                                    this->Register[index1].setDataFloat(value.getDataFloat() + data);
+                                }
+                                else if (checkTypeR == 2 && checkLiteral == 2)
+                                {
+                                    double data = value.getDataFloat();
+                                    this->Register[index1].setDataFloat(value.getDataFloat() + data);
+                                }
+                                else if (checkLiteral == 0)
+                                {
+
+                                    int addressError = this->ip - 1;
+                                    InvalidOperand e = InvalidOperand(addressError);
+                                    throw e;
+                                    break;
+                                }
+
+                                else
+                                {
+                                    int addressError = this->ip - 1;
+                                    InvalidOperand e = InvalidOperand(addressError);
+                                    throw e;
+                                    break;
+                                }
+                            }
+                            else if (opcode == "Minus")
+                            {
+                                if (checkTypeR == 1 && checkLiteral == 1)
+                                {
+                                    int data = value.getDataInt();
+                                    this->Register[index1].setDataInt(value.getDataInt() - data);
+                                }
+                                else if (checkTypeR == 1 && checkLiteral == 2)
+                                {
+                                    double data = value.getDataFloat();
+                                    this->Register[index1].setDataFloat(value.getDataInt() - data);
+                                }
+                                else if (checkTypeR == 2 && checkLiteral == 1)
+                                {
+                                    int data = value.getDataInt();
+                                    this->Register[index1].setDataFloat(value.getDataFloat() - data);
+                                }
+                                else if (checkTypeR == 2 && checkLiteral == 2)
+                                {
+                                    double data = value.getDataFloat();
+                                    this->Register[index1].setDataFloat(value.getDataFloat() - data);
+                                }
+                                else if (checkLiteral == 0)
+                                {
+
+                                    int addressError = this->ip - 1;
+                                    InvalidOperand e = InvalidOperand(addressError);
+                                    throw e;
+                                    break;
+                                }
+
+                                else
+                                {
+                                    int addressError = this->ip - 1;
+                                    InvalidOperand e = InvalidOperand(addressError);
+                                    throw e;
+                                    break;
+                                }
+                            }
+                            else if (opcode == "Mul")
+                            {
+                                if (checkTypeR == 1 && checkLiteral == 1)
+                                {
+                                    int data = value.getDataInt();
+                                    this->Register[index1].setDataInt(value.getDataInt() * data);
+                                }
+                                else if (checkTypeR == 1 && checkLiteral == 2)
+                                {
+                                    double data = value.getDataFloat();
+                                    this->Register[index1].setDataFloat(value.getDataInt() * data);
+                                }
+                                else if (checkTypeR == 2 && checkLiteral == 1)
+                                {
+                                    int data = value.getDataInt();
+                                    this->Register[index1].setDataFloat(value.getDataFloat() * data);
+                                }
+                                else if (checkTypeR == 2 && checkLiteral == 2)
+                                {
+                                    double data = value.getDataFloat();
+                                    this->Register[index1].setDataFloat(value.getDataFloat() * data);
+                                }
+                                else if (checkLiteral == 0)
+                                {
+
+                                    int addressError = this->ip - 1;
+                                    InvalidOperand e = InvalidOperand(addressError);
+                                    throw e;
+                                    break;
+                                }
+                                else
+                                {
+                                    int addressError = this->ip - 1;
+                                    InvalidOperand e = InvalidOperand(addressError);
+                                    throw e;
+                                    break;
+                                }
+                            }
+                            else if (opcode == "Div")
+                            {
+                                if (checkTypeR == 1 && checkLiteral == 1)
+                                {
+                                    if (value.getDataInt() == 0)
+                                    {
+                                        int addressError = this->ip - 1;
+                                        DivideByZero e = DivideByZero(addressError);
+                                        throw e;
+                                        break;
+                                    }
+                                    else
+                                    {
+                                        int data = value.getDataInt();
+                                        this->Register[index1].setDataInt(value.getDataInt() / data);
+                                    }
+                                }
+                                else if (checkTypeR == 1 && checkLiteral == 2)
+                                {
+                                    if (value.getDataFloat() == 0)
+                                    {
+                                        int addressError = this->ip - 1;
+                                        DivideByZero e = DivideByZero(addressError);
+                                        throw e;
+                                        break;
+                                    }
+                                    else
+                                    {
+                                        double data = value.getDataFloat();
+                                        this->Register[index1].setDataFloat(value.getDataInt() / data);
+                                    }
+                                }
+                                else if (checkTypeR == 2 && checkLiteral == 1)
+                                {
+                                    if (value.getDataInt() == 0)
+                                    {
+                                        int addressError = this->ip - 1;
+                                        DivideByZero e = DivideByZero(addressError);
+                                        throw e;
+                                        break;
+                                    }
+                                    else
+                                    {
+                                        int data = value.getDataInt();
+                                        this->Register[index1].setDataFloat(value.getDataFloat() / data);
+                                    }
+                                }
+                                else if (checkTypeR == 2 && checkLiteral == 2)
+                                {
+                                    if (value.getDataFloat() == 0)
+                                    {
+                                        int addressError = this->ip - 1;
+                                        DivideByZero e = DivideByZero(addressError);
+                                        throw e;
+                                        break;
+                                    }
+                                    else
+                                    {
+                                        double data = value.getDataFloat();
+                                        this->Register[index1].setDataFloat(value.getDataFloat() / data);
+                                    }
+                                }
+                                else if (checkLiteral == 0)
+                                {
+
+                                    int addressError = this->ip - 1;
+                                    InvalidOperand e = InvalidOperand(addressError);
+                                    throw e;
+                                    break;
+                                }
+
+                                else
+                                {
+                                    int addressError = this->ip - 1;
+                                    InvalidOperand e = InvalidOperand(addressError);
+                                    throw e;
+                                    break;
+                                }
+                            }
+                        }
                     }
                 }
                 else
                 {
-                    int address = this->ip - 1;
-                    InvalidOperand e = InvalidOperand(address);
+                    int addressError = this->ip - 1;
+                    InvalidOperand e = InvalidOperand(addressError);
                     throw e;
                     break;
                 }
             }
             else
             {
-                int address = this->ip - 1;
-                InvalidInstruction e = InvalidInstruction(address);
+                int addressError = this->ip - 1;
+                InvalidOperand e = InvalidOperand(addressError);
                 throw e;
                 break;
             }
@@ -885,8 +908,8 @@ void VM::cpu()
                         bool check = checkSpace(op2);
                         if (check == true)
                         {
-                            int address = this->ip - 1;
-                            InvalidInstruction e = InvalidInstruction(address);
+                            int addressError = this->ip - 1;
+                            InvalidInstruction e = InvalidInstruction(addressError);
                             throw e;
                             break;
                         }
@@ -960,15 +983,15 @@ void VM::cpu()
                                         else if (check2 == 0)
                                         {
 
-                                            int address = this->ip - 1;
-                                            InvalidOperand e = InvalidOperand(address);
+                                            int addressError = this->ip - 1;
+                                            InvalidOperand e = InvalidOperand(addressError);
                                             throw e;
                                             break;
                                         }
                                         else
                                         {
-                                            int address = this->ip - 1;
-                                            InvalidOperand e = InvalidOperand(address);
+                                            int addressError = this->ip - 1;
+                                            InvalidOperand e = InvalidOperand(addressError);
                                             throw e;
                                             break;
                                         }
@@ -1033,15 +1056,15 @@ void VM::cpu()
                                         else if (check2 == 0)
                                         {
 
-                                            int address = this->ip - 1;
-                                            InvalidOperand e = InvalidOperand(address);
+                                            int addressError = this->ip - 1;
+                                            InvalidOperand e = InvalidOperand(addressError);
                                             throw e;
                                             break;
                                         }
                                         else
                                         {
-                                            int address = this->ip - 1;
-                                            TypeMismatch e = TypeMismatch(address);
+                                            int addressError = this->ip - 1;
+                                            TypeMismatch e = TypeMismatch(addressError);
                                             throw e;
                                         }
                                     }
@@ -1094,16 +1117,17 @@ void VM::cpu()
                                         else if (check2 == 0)
                                         {
 
-                                            int address = this->ip - 1;
-                                            InvalidOperand e = InvalidOperand(address);
+                                            int addressError = this->ip - 1;
+                                            InvalidOperand e = InvalidOperand(addressError);
                                             throw e;
                                             break;
                                         }
                                         else
                                         {
-                                            int address = this->ip - 1;
-                                            TypeMismatch e = TypeMismatch(address);
+                                            int addressError = this->ip - 1;
+                                            TypeMismatch e = TypeMismatch(addressError);
                                             throw e;
+                                            break;
                                         }
                                     }
                                     else if (opcode == "CmpLE")
@@ -1155,17 +1179,18 @@ void VM::cpu()
                                         else if (check2 == 0)
                                         {
 
-                                            int address = this->ip - 1;
-                                            InvalidOperand e = InvalidOperand(address);
+                                            int addressError = this->ip - 1;
+                                            InvalidOperand e = InvalidOperand(addressError);
                                             throw e;
                                             break;
                                         }
 
                                         else
                                         {
-                                            int address = this->ip - 1;
-                                            TypeMismatch e = TypeMismatch(address);
+                                            int addressError = this->ip - 1;
+                                            TypeMismatch e = TypeMismatch(addressError);
                                             throw e;
+                                            break;
                                         }
                                     }
                                     else if (opcode == "CmpGT")
@@ -1217,17 +1242,18 @@ void VM::cpu()
                                         else if (check2 == 0)
                                         {
 
-                                            int address = this->ip - 1;
-                                            InvalidOperand e = InvalidOperand(address);
+                                            int addressError = this->ip - 1;
+                                            InvalidOperand e = InvalidOperand(addressError);
                                             throw e;
                                             break;
                                         }
 
                                         else
                                         {
-                                            int address = this->ip - 1;
-                                            TypeMismatch e = TypeMismatch(address);
+                                            int addressError = this->ip - 1;
+                                            TypeMismatch e = TypeMismatch(addressError);
                                             throw e;
+                                            break;
                                         }
                                     }
                                     else if (opcode == "CmpGE")
@@ -1279,23 +1305,24 @@ void VM::cpu()
                                         else if (check2 == 0)
                                         {
 
-                                            int address = this->ip - 1;
-                                            InvalidOperand e = InvalidOperand(address);
+                                            int addressError = this->ip - 1;
+                                            InvalidOperand e = InvalidOperand(addressError);
                                             throw e;
                                             break;
                                         }
                                         else
                                         {
-                                            int address = this->ip - 1;
-                                            TypeMismatch e = TypeMismatch(address);
+                                            int addressError = this->ip - 1;
+                                            TypeMismatch e = TypeMismatch(addressError);
                                             throw e;
+                                            break;
                                         }
                                     }
                                 }
                                 else
                                 {
-                                    int address = this->ip - 1;
-                                    InvalidOperand e = InvalidOperand(address);
+                                    int addressError = this->ip - 1;
+                                    InvalidOperand e = InvalidOperand(addressError);
                                     throw e;
                                     break;
                                 }
@@ -1365,16 +1392,17 @@ void VM::cpu()
                                     else if (checkLiteral == 0)
                                     {
 
-                                        int address = this->ip - 1;
-                                        InvalidOperand e = InvalidOperand(address);
+                                        int addressError = this->ip - 1;
+                                        InvalidOperand e = InvalidOperand(addressError);
                                         throw e;
                                         break;
                                     }
                                     else
                                     {
-                                        int address = this->ip - 1;
-                                        TypeMismatch e = TypeMismatch(address);
+                                        int addressError = this->ip - 1;
+                                        TypeMismatch e = TypeMismatch(addressError);
                                         throw e;
+                                        break;
                                     }
                                 }
                                 else if (opcode == "CmpNE")
@@ -1437,16 +1465,17 @@ void VM::cpu()
                                     else if (checkLiteral == 0)
                                     {
 
-                                        int address = this->ip - 1;
-                                        InvalidOperand e = InvalidOperand(address);
+                                        int addressError = this->ip - 1;
+                                        InvalidOperand e = InvalidOperand(addressError);
                                         throw e;
                                         break;
                                     }
                                     else
                                     {
-                                        int address = this->ip - 1;
-                                        TypeMismatch e = TypeMismatch(address);
+                                        int addressError = this->ip - 1;
+                                        TypeMismatch e = TypeMismatch(addressError);
                                         throw e;
+                                        break;
                                     }
                                 }
                                 else if (opcode == "CmpLT")
@@ -1498,16 +1527,17 @@ void VM::cpu()
                                     else if (checkLiteral == 0)
                                     {
 
-                                        int address = this->ip - 1;
-                                        InvalidOperand e = InvalidOperand(address);
+                                        int addressError = this->ip - 1;
+                                        InvalidOperand e = InvalidOperand(addressError);
                                         throw e;
                                         break;
                                     }
                                     else
                                     {
-                                        int address = this->ip - 1;
-                                        TypeMismatch e = TypeMismatch(address);
+                                        int addressError = this->ip - 1;
+                                        TypeMismatch e = TypeMismatch(addressError);
                                         throw e;
+                                        break;
                                     }
                                 }
                                 else if (opcode == "CmpLE")
@@ -1559,16 +1589,17 @@ void VM::cpu()
                                     else if (checkLiteral == 0)
                                     {
 
-                                        int address = this->ip - 1;
-                                        InvalidOperand e = InvalidOperand(address);
+                                        int addressError = this->ip - 1;
+                                        InvalidOperand e = InvalidOperand(addressError);
                                         throw e;
                                         break;
                                     }
                                     else
                                     {
-                                        int address = this->ip - 1;
-                                        TypeMismatch e = TypeMismatch(address);
+                                        int addressError = this->ip - 1;
+                                        TypeMismatch e = TypeMismatch(addressError);
                                         throw e;
+                                        break;
                                     }
                                 }
                                 else if (opcode == "CmpGT")
@@ -1620,16 +1651,17 @@ void VM::cpu()
                                     else if (checkLiteral == 0)
                                     {
 
-                                        int address = this->ip - 1;
-                                        InvalidOperand e = InvalidOperand(address);
+                                        int addressError = this->ip - 1;
+                                        InvalidOperand e = InvalidOperand(addressError);
                                         throw e;
                                         break;
                                     }
                                     else
                                     {
-                                        int address = this->ip - 1;
-                                        TypeMismatch e = TypeMismatch(address);
+                                        int addressError = this->ip - 1;
+                                        TypeMismatch e = TypeMismatch(addressError);
                                         throw e;
+                                        break;
                                     }
                                 }
                                 else if (opcode == "CmpGE")
@@ -1681,16 +1713,17 @@ void VM::cpu()
                                     else if (checkLiteral == 0)
                                     {
 
-                                        int address = this->ip - 1;
-                                        InvalidOperand e = InvalidOperand(address);
+                                        int addressError = this->ip - 1;
+                                        InvalidOperand e = InvalidOperand(addressError);
                                         throw e;
                                         break;
                                     }
                                     else
                                     {
-                                        int address = this->ip - 1;
-                                        TypeMismatch e = TypeMismatch(address);
+                                        int addressError = this->ip - 1;
+                                        TypeMismatch e = TypeMismatch(addressError);
                                         throw e;
+                                        break;
                                     }
                                 }
                             }
@@ -1699,8 +1732,8 @@ void VM::cpu()
                 }         //check Op2
                 else
                 {
-                    int address = this->ip - 1;
-                    InvalidOperand e = InvalidOperand(address);
+                    int addressError = this->ip - 1;
+                    InvalidOperand e = InvalidOperand(addressError);
                     throw e;
                     break;
                 }
@@ -1708,8 +1741,8 @@ void VM::cpu()
             else
 
             {
-                int address = this->ip - 1;
-                InvalidInstruction e = InvalidInstruction(address);
+                int addressError = this->ip - 1;
+                InvalidInstruction e = InvalidInstruction(addressError);
                 throw e;
                 break;
             }
@@ -1734,8 +1767,8 @@ void VM::cpu()
                     }
                     else
                     {
-                        int address = this->ip - 1;
-                        TypeMismatch e = TypeMismatch(address);
+                        int addressError = this->ip - 1;
+                        TypeMismatch e = TypeMismatch(addressError);
                         throw e;
                         break;
                     }
@@ -1743,16 +1776,16 @@ void VM::cpu()
 
                 else
                 {
-                    int address = this->ip - 1;
-                    InvalidOperand e = InvalidOperand(address);
+                    int addressError = this->ip - 1;
+                    InvalidOperand e = InvalidOperand(addressError);
                     throw e;
                     break;
                 }
             }
             else
             {
-                int address = this->ip - 1;
-                InvalidInstruction e = InvalidInstruction(address);
+                int addressError = this->ip - 1;
+                InvalidInstruction e = InvalidInstruction(addressError);
                 throw e;
                 break;
             }
@@ -1775,8 +1808,8 @@ void VM::cpu()
                         bool check = checkSpace(op2);
                         if (check == true)
                         {
-                            int address = this->ip - 1;
-                            InvalidInstruction e = InvalidInstruction(address);
+                            int addressError = this->ip - 1;
+                            InvalidInstruction e = InvalidInstruction(addressError);
                             throw e;
                             break;
                         }
@@ -1801,9 +1834,10 @@ void VM::cpu()
 
                                         else
                                         {
-                                            int address = this->ip - 1;
-                                            TypeMismatch e = TypeMismatch(address);
+                                            int addressError = this->ip - 1;
+                                            TypeMismatch e = TypeMismatch(addressError);
                                             throw e;
+                                            break;
                                         }
                                     }
                                     else if (opcode == "Or")
@@ -1817,16 +1851,17 @@ void VM::cpu()
 
                                         else
                                         {
-                                            int address = this->ip - 1;
-                                            TypeMismatch e = TypeMismatch(address);
+                                            int addressError = this->ip - 1;
+                                            TypeMismatch e = TypeMismatch(addressError);
                                             throw e;
+                                            break;
                                         }
                                     }
                                 }
                                 else
                                 {
-                                    int address = this->ip - 1;
-                                    InvalidOperand e = InvalidOperand(address);
+                                    int addressError = this->ip - 1;
+                                    InvalidOperand e = InvalidOperand(addressError);
                                     throw e;
                                     break;
                                 }
@@ -1846,17 +1881,18 @@ void VM::cpu()
                                     }
                                     else if (checkTypeR == 0)
                                     {
-                                        int address = this->ip - 1;
-                                        InvalidOperand e = InvalidOperand(address);
+                                        int addressError = this->ip - 1;
+                                        InvalidOperand e = InvalidOperand(addressError);
                                         throw e;
                                         break;
                                     }
 
                                     else
                                     {
-                                        int address = this->ip - 1;
-                                        TypeMismatch e = TypeMismatch(address);
+                                        int addressError = this->ip - 1;
+                                        TypeMismatch e = TypeMismatch(addressError);
                                         throw e;
+                                        break;
                                     }
                                 }
                                 else if (opcode == "Or")
@@ -1869,17 +1905,18 @@ void VM::cpu()
                                     }
                                     else if (checkTypeR == 0)
                                     {
-                                        int address = this->ip - 1;
-                                        InvalidOperand e = InvalidOperand(address);
+                                        int addressError = this->ip - 1;
+                                        InvalidOperand e = InvalidOperand(addressError);
                                         throw e;
                                         break;
                                     }
 
                                     else
                                     {
-                                        int address = this->ip - 1;
-                                        TypeMismatch e = TypeMismatch(address);
+                                        int addressError = this->ip - 1;
+                                        TypeMismatch e = TypeMismatch(addressError);
                                         throw e;
+                                        break;
                                     }
                                 }
                             }
@@ -1887,24 +1924,24 @@ void VM::cpu()
                     }
                     else
                     {
-                        int address = this->ip - 1;
-                        InvalidInstruction e = InvalidInstruction(address);
+                        int addressError = this->ip - 1;
+                        InvalidInstruction e = InvalidInstruction(addressError);
                         throw e;
                         break;
                     }
                 }
                 else
                 {
-                    int address = this->ip - 1;
-                    InvalidInstruction e = InvalidInstruction(address);
+                    int addressError = this->ip - 1;
+                    InvalidInstruction e = InvalidInstruction(addressError);
                     throw e;
                     break;
                 }
             }
             else
             {
-                int address = this->ip - 1;
-                InvalidOperand e = InvalidOperand(address);
+                int addressError = this->ip - 1;
+                InvalidOperand e = InvalidOperand(addressError);
                 throw e;
                 break;
             }
@@ -1928,8 +1965,8 @@ void VM::cpu()
                         bool check = checkSpace(op2);
                         if (check == true)
                         {
-                            int address = this->ip - 1;
-                            InvalidInstruction e = InvalidInstruction(address);
+                            int addressError = this->ip - 1;
+                            InvalidInstruction e = InvalidInstruction(addressError);
                             throw e;
                             break;
                         }
@@ -1960,23 +1997,23 @@ void VM::cpu()
                                     }
                                     else if (check2 == 0)
                                     {
-                                        int address = this->ip - 1;
-                                        InvalidOperand e = InvalidOperand(address);
+                                        int addressError = this->ip - 1;
+                                        InvalidOperand e = InvalidOperand(addressError);
                                         throw e;
                                         break;
                                     }
                                     else
                                     {
-                                        int address = this->ip - 1;
-                                        TypeMismatch e = TypeMismatch(address);
+                                        int addressError = this->ip - 1;
+                                        TypeMismatch e = TypeMismatch(addressError);
                                         throw e;
                                         break;
                                     }
                                 }
                                 else
                                 {
-                                    int address = this->ip - 1;
-                                    InvalidOperand e = InvalidOperand(address);
+                                    int addressError = this->ip - 1;
+                                    InvalidOperand e = InvalidOperand(addressError);
                                     throw e;
                                     break;
                                 }
@@ -2004,40 +2041,41 @@ void VM::cpu()
                                 }
                                 else if (checkLiteral == 0)
                                 {
-                                    int address = this->ip - 1;
-                                    InvalidOperand e = InvalidOperand(address);
+                                    int addressError = this->ip - 1;
+                                    InvalidOperand e = InvalidOperand(addressError);
                                     throw e;
                                     break;
                                 }
                                 else
                                 {
-                                    int address = this->ip - 1;
-                                    TypeMismatch e = TypeMismatch(address);
+                                    int addressError = this->ip - 1;
+                                    TypeMismatch e = TypeMismatch(addressError);
                                     throw e;
+                                    break;
                                 }
                             }
                         }
                     }
                     else
                     {
-                        int address = this->ip - 1;
-                        InvalidInstruction e = InvalidInstruction(address);
+                        int addressError = this->ip - 1;
+                        InvalidInstruction e = InvalidInstruction(addressError);
                         throw e;
                         break;
                     }
                 }
                 else
                 {
-                    int address = this->ip - 1;
-                    InvalidOperand e = InvalidOperand(address);
+                    int addressError = this->ip - 1;
+                    InvalidOperand e = InvalidOperand(addressError);
                     throw e;
                     break;
                 }
             }
             else
             {
-                int address = this->ip - 1;
-                InvalidInstruction e = InvalidInstruction(address);
+                int addressError = this->ip - 1;
+                InvalidInstruction e = InvalidInstruction(addressError);
                 throw e;
                 break;
             }
@@ -2060,8 +2098,8 @@ void VM::cpu()
                         bool check = checkSpace(op2);
                         if (check == true)
                         {
-                            int address = this->ip - 1;
-                            InvalidInstruction e = InvalidInstruction(address);
+                            int addressError = this->ip - 1;
+                            InvalidInstruction e = InvalidInstruction(addressError);
                             throw e;
                             break;
                         }
@@ -2079,8 +2117,8 @@ void VM::cpu()
                                         int address = this->Register[index2].getAddress();
                                         if (address > 65535 && address < 0)
                                         {
-                                            int address = this->ip - 1;
-                                            TypeMismatch e = TypeMismatch(address);
+                                            int addressError = this->ip - 1;
+                                            TypeMismatch e = TypeMismatch(addressError);
                                             throw e;
                                             break;
                                         }
@@ -2106,16 +2144,16 @@ void VM::cpu()
                                             }
                                             else if (checkValueOfSrc == 0)
                                             {
-                                                int address = this->ip - 1;
-                                                InvalidOperand e = InvalidOperand(address);
+                                                int addressError = this->ip - 1;
+                                                InvalidOperand e = InvalidOperand(addressError);
                                                 throw e;
                                                 break;
                                             }
 
                                             else
                                             {
-                                                int address = this->ip - 1;
-                                                TypeMismatch e = TypeMismatch(address);
+                                                int addressError = this->ip - 1;
+                                                TypeMismatch e = TypeMismatch(addressError);
                                                 throw e;
                                                 break;
                                             }
@@ -2123,16 +2161,16 @@ void VM::cpu()
                                     }
                                     else
                                     {
-                                        int address = this->ip - 1;
-                                        TypeMismatch e = TypeMismatch(address);
+                                        int addressError = this->ip - 1;
+                                        TypeMismatch e = TypeMismatch(addressError);
                                         throw e;
                                         break;
                                     }
                                 }
                                 else
                                 {
-                                    int address = this->ip - 1;
-                                    InvalidOperand e = InvalidOperand(address);
+                                    int addressError = this->ip - 1;
+                                    InvalidOperand e = InvalidOperand(addressError);
                                     throw e;
                                     break;
                                 }
@@ -2147,8 +2185,8 @@ void VM::cpu()
 
                                     if (address > 65535 && address < 0)
                                     {
-                                        int address = this->ip - 1;
-                                        TypeMismatch e = TypeMismatch(address);
+                                        int addressError = this->ip - 1;
+                                        TypeMismatch e = TypeMismatch(addressError);
                                         throw e;
                                     }
 
@@ -2174,16 +2212,16 @@ void VM::cpu()
                                         }
                                         else if (checkValueOfSrc == 0)
                                         {
-                                            int address = this->ip - 1;
-                                            InvalidOperand e = InvalidOperand(address);
+                                            int addressError = this->ip - 1;
+                                            InvalidOperand e = InvalidOperand(addressError);
                                             throw e;
                                             break;
                                         }
 
                                         else
                                         {
-                                            int address = this->ip - 1;
-                                            TypeMismatch e = TypeMismatch(address);
+                                            int addressError = this->ip - 1;
+                                            TypeMismatch e = TypeMismatch(addressError);
                                             throw e;
                                             break;
                                         }
@@ -2191,15 +2229,15 @@ void VM::cpu()
                                 }
                                 else if (checkLiteral == 0)
                                 {
-                                    int address = this->ip - 1;
-                                    InvalidOperand e = InvalidOperand(address);
+                                    int addressError = this->ip - 1;
+                                    InvalidOperand e = InvalidOperand(addressError);
                                     throw e;
                                     break;
                                 }
                                 else
                                 {
-                                    int address = this->ip - 1;
-                                    TypeMismatch e = TypeMismatch(address);
+                                    int addressError = this->ip - 1;
+                                    TypeMismatch e = TypeMismatch(addressError);
                                     throw e;
                                     break;
                                 }
@@ -2208,16 +2246,16 @@ void VM::cpu()
                     }
                     else
                     {
-                        int address = this->ip - 1;
-                        InvalidOperand e = InvalidOperand(address);
+                        int addressError = this->ip - 1;
+                        InvalidOperand e = InvalidOperand(addressError);
                         throw e;
                         break;
                     }
                 }
                 else
                 {
-                    int address = this->ip - 1;
-                    InvalidOperand e = InvalidOperand(address);
+                    int addressError = this->ip - 1;
+                    InvalidOperand e = InvalidOperand(addressError);
                     throw e;
                     break;
                 }
@@ -2225,8 +2263,8 @@ void VM::cpu()
 
             else
             {
-                int address = this->ip - 1;
-                InvalidInstruction e = InvalidInstruction(address);
+                int addressError = this->ip - 1;
+                InvalidInstruction e = InvalidInstruction(addressError);
                 throw e;
                 break;
             }
@@ -2249,8 +2287,8 @@ void VM::cpu()
                         bool check = checkSpace(op2);
                         if (check == true)
                         {
-                            int address = this->ip - 1;
-                            InvalidInstruction e = InvalidInstruction(address);
+                            int addressError = this->ip - 1;
+                            InvalidInstruction e = InvalidInstruction(addressError);
                             throw e;
                             break;
                         }
@@ -2270,58 +2308,57 @@ void VM::cpu()
 
                                         if (address > 65535 && address < 0)
                                         {
-                                            int address = this->ip - 1;
-                                            TypeMismatch e = TypeMismatch(address);
+                                            int addressError = this->ip - 1;
+                                            TypeMismatch e = TypeMismatch(addressError);
                                             throw e;
+                                            break;
                                         }
 
                                         else
                                         {
                                             DataStorage temp;
-                                            switch (check2)
-                                            {
-                                            case 1:
+
+                                            if (check2 == 1)
                                             {
                                                 temp.setDataInt(this->Register[index2].getDataInt());
-                                                break;
+                                                this->staticMemory[address] = temp;
                                             }
-                                            case 2:
+                                            else if (check2 == 2)
                                             {
                                                 temp.setDataFloat(this->Register[index2].getDataFloat());
-                                                break;
+                                                this->staticMemory[address] = temp;
                                             }
-                                            case 3:
+                                            else if (check2 == 3)
                                             {
                                                 temp.setDataBool(this->Register[index2].getDataBool());
-                                                break;
+                                                this->staticMemory[address] = temp;
                                             }
-                                            case 4:
+                                            else if (check2 == 4)
                                             {
                                                 temp.setAddress(this->Register[index2].getAddress());
-                                                break;
+                                                this->staticMemory[address] = temp;
                                             }
-                                            default:
+                                            else
                                             {
-                                                int add = this->ip - 1; // address
-                                                TypeMismatch e = TypeMismatch(add);
+                                                int addressError = this->ip - 1; // address
+                                                TypeMismatch e = TypeMismatch(addressError);
+                                                throw e;
                                                 break;
                                             }
-                                            };
-                                            this->staticMemory[address] = temp;
                                         }
                                     }
                                     else
                                     {
-                                        int address = this->ip - 1;
-                                        TypeMismatch e = TypeMismatch(address);
+                                        int addressError = this->ip - 1;
+                                        TypeMismatch e = TypeMismatch(addressError);
                                         throw e;
                                         break;
                                     }
                                 }
                                 else
                                 {
-                                    int address = this->ip - 1;
-                                    InvalidOperand e = InvalidOperand(address);
+                                    int addressError = this->ip - 1;
+                                    InvalidOperand e = InvalidOperand(addressError);
                                     throw e;
                                     break;
                                 }
@@ -2333,8 +2370,8 @@ void VM::cpu()
                                 int checkTypeR = this->Register[index1].getTypeData();
                                 if (checkLiteral == 0)
                                 {
-                                    int address = this->ip - 1;
-                                    InvalidInstruction e = InvalidInstruction(address);
+                                    int addressError = this->ip - 1;
+                                    InvalidInstruction e = InvalidInstruction(addressError);
                                     throw e;
                                     break;
                                 }
@@ -2343,8 +2380,8 @@ void VM::cpu()
                                     int address = this->Register[index1].getAddress();
                                     if (address > 65535 && address < 0)
                                     {
-                                        int address = this->ip - 1;
-                                        TypeMismatch e = TypeMismatch(address);
+                                        int addressError = this->ip - 1;
+                                        TypeMismatch e = TypeMismatch(addressError);
                                         throw e;
                                         break;
                                     }
@@ -2374,8 +2411,8 @@ void VM::cpu()
                                         }
                                         else
                                         {
-                                            int address = this->ip - 1;
-                                            TypeMismatch e = TypeMismatch(address);
+                                            int addressError = this->ip - 1;
+                                            TypeMismatch e = TypeMismatch(addressError);
                                             throw e;
                                             break;
                                         }
@@ -2383,25 +2420,26 @@ void VM::cpu()
                                 }
                                 else
                                 {
-                                    int address = this->ip - 1;
-                                    TypeMismatch e = TypeMismatch(address);
+                                    int addressError = this->ip - 1;
+                                    TypeMismatch e = TypeMismatch(addressError);
                                     throw e;
+                                    break;
                                 }
                             }
                         }
                     }
                     else
                     {
-                        int address = this->ip - 1;
-                        InvalidOperand e = InvalidOperand(address);
+                        int addressError = this->ip - 1;
+                        InvalidOperand e = InvalidOperand(addressError);
                         throw e;
                         break;
                     }
                 }
                 else
                 {
-                    int address = this->ip - 1;
-                    InvalidOperand e = InvalidOperand(address);
+                    int addressError = this->ip - 1;
+                    InvalidOperand e = InvalidOperand(addressError);
                     throw e;
                     break;
                 }
@@ -2409,15 +2447,614 @@ void VM::cpu()
 
             else
             {
-                int address = this->ip - 1;
-                InvalidInstruction e = InvalidInstruction(address);
+                int addressError = this->ip - 1;
+                InvalidInstruction e = InvalidInstruction(addressError);
                 throw e;
                 break;
             }
         }
         else if (opcode == "Jump")
         {
+
+            if (temp.getNOperands() == 1)
+            {
+
+                string op1 = temp.getOp1();
+                int sizeOp1 = op1.length();
+                bool check = checkSpace(op1);
+                if (check == true)
+                {
+                    int addressError = this->ip - 1;
+                    InvalidInstruction e = InvalidInstruction(addressError);
+                    throw e;
+                    break;
+                }
+                else
+                {
+                    if (op1[0] == 'R')
+                    {
+                        int index1 = checkRegister(op1, sizeOp1); //return R index;
+                        if (index1 >= 1 && index1 <= 15)
+                        {
+                            index1 = index1 - 1;
+                            int check1 = this->Register[index1].getTypeData();
+                            if (check1 == 4)
+                            {
+                                int address = this->Register[index1].getAddress();
+                                if (address >= 0 && address <= lengthOfCode - 1)
+                                {
+                                    this->ip = address;
+                                }
+                                else
+                                {
+                                    int addressError = this->ip - 1;
+                                    InvalidDestination e = InvalidDestination(addressError);
+                                    throw e;
+                                    break;
+                                }
+                            }
+                            else if (check1 == 0)
+                            {
+                                int addressError = this->ip - 1;
+                                InvalidOperand e = InvalidOperand(addressError);
+                                throw e;
+                                break;
+                            }
+                            else
+                            {
+                                int addressError = this->ip - 1;
+                                TypeMismatch e = TypeMismatch(addressError);
+                                throw e;
+                                break;
+                            }
+                        }
+                        else
+                        {
+                            int addressError = this->ip - 1;
+                            InvalidOperand e = InvalidOperand(addressError);
+                            throw e;
+                            break;
+                        }
+                    }
+                    else if (op1[0] != 'R')
+                    {
+                        DataStorage value;
+                        int checkLiteral = checkOperand2(op1, value);
+                        if (checkLiteral == 4)
+                        {
+                            int address = value.getAddress();
+                            if (address >= 0 && address <= lengthOfCode - 1)
+                            {
+                                this->ip = address;
+                            }
+                            else
+                            {
+                                int addressError = this->ip - 1;
+                                InvalidDestination e = InvalidDestination(addressError);
+                                throw e;
+                                break;
+                            }
+                        }
+                        else if (checkLiteral == 0)
+                        {
+                            int addressError = this->ip - 1;
+                            InvalidOperand e = InvalidOperand(addressError);
+                            throw e;
+                            break;
+                        }
+                        else
+                        {
+                            int addressError = this->ip - 1;
+                            TypeMismatch e = TypeMismatch(addressError);
+                            throw e;
+                            break;
+                        }
+                    }
+                }
+            }
+            else
+            {
+                int addressError = this->ip - 1;
+                InvalidInstruction e = InvalidInstruction(addressError);
+                throw e;
+                break;
+            }
         }
+        else if (opcode == "JumpIf")
+        {
+
+            if (temp.getNOperands() == 2)
+            {
+                string op1 = temp.getOp1();
+                int sizeOp1 = op1.length();
+                int index1 = checkRegister(op1, sizeOp1); //return R index;
+                if (index1 >= 1 && index1 <= 15)
+                {
+                    index1 = index1 - 1;
+                    string op2 = temp.getOp2();
+                    if (op2[0] == ' ')
+                    {
+                        op2 = eraseCharAtIndex(op2, 0);
+                        int sizeOp2 = op2.length();
+                        bool check = checkSpace(op2);
+                        if (check == true)
+                        {
+                            int addressError = this->ip - 1;
+                            InvalidInstruction e = InvalidInstruction(addressError);
+                            throw e;
+                            break;
+                        }
+                        else
+                        {
+                            if (op2[0] == 'R')
+                            { //return R index;
+
+                                int index2 = checkRegister(op2, sizeOp2);
+                                if (index2 >= 1 && index2 <= 15)
+                                {
+                                    index2 = index2 - 1;
+                                    int check1 = this->Register[index1].getTypeData();
+                                    int check2 = this->Register[index2].getTypeData();
+                                    if (check1 == 3)
+                                    {
+                                        if (check2 == 4)
+                                        {
+
+                                            int address = this->Register[index2].getAddress();
+                                            if (address >= 0 && address <= lengthOfCode - 1)
+                                            {
+                                                this->ip = address;
+                                            }
+                                            else
+                                            {
+                                                int addressError = this->ip - 1;
+                                                InvalidDestination e = InvalidDestination(addressError);
+                                                throw e;
+                                                break;
+                                            }
+                                        }
+                                        else if (check2 == 0)
+                                        {
+                                            int addressError = this->ip - 1;
+                                            InvalidOperand e = InvalidOperand(addressError);
+                                            throw e;
+                                            break;
+                                        }
+                                        else
+                                        {
+                                            int addressError = this->ip - 1;
+                                            TypeMismatch e = TypeMismatch(addressError);
+                                            throw e;
+                                            break;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        int addressError = this->ip - 1;
+                                        TypeMismatch e = TypeMismatch(addressError);
+                                        throw e;
+                                        break;
+                                    }
+                                }
+
+                                else
+                                {
+                                    int addressError = this->ip - 1;
+                                    InvalidOperand e = InvalidOperand(addressError);
+                                    throw e;
+                                    break;
+                                }
+                            }
+                            else if (op2[0] != 'R')
+                            {
+                                DataStorage value;
+                                int checkLiteral = checkOperand2(op2, value);
+                                int checkTypeR = this->Register[index1].getTypeData();
+                                if (checkTypeR == 3)
+                                {
+                                    if (checkLiteral == 4)
+                                    {
+                                        int address = value.getAddress();
+                                        if (address >= 0 && address <= lengthOfCode - 1)
+                                        {
+                                            this->ip = address;
+                                        }
+                                        else
+                                        {
+                                            int addressError = this->ip - 1;
+                                            InvalidDestination e = InvalidDestination(addressError);
+                                            throw e;
+                                            break;
+                                        }
+                                    }
+                                    else if (checkLiteral == 0)
+                                    {
+                                        int addressError = this->ip - 1;
+                                        InvalidOperand e = InvalidOperand(addressError);
+                                        throw e;
+                                        break;
+                                    }
+                                    else
+                                    {
+                                        int addressError = this->ip - 1;
+                                        TypeMismatch e = TypeMismatch(addressError);
+                                        throw e;
+                                        break;
+                                    }
+                                }
+                                else
+                                {
+                                    int addressError = this->ip - 1;
+                                    TypeMismatch e = TypeMismatch(addressError);
+                                    throw e;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        int addressError = this->ip - 1;
+                        InvalidInstruction e = InvalidInstruction(addressError);
+                        throw e;
+                        break;
+                    }
+                }
+                else
+                {
+                    int addressError = this->ip - 1;
+                    InvalidOperand e = InvalidOperand(addressError);
+                    throw e;
+                    break;
+                }
+            }
+            else
+            {
+                int addressError = this->ip - 1;
+                InvalidInstruction e = InvalidInstruction(addressError);
+                throw e;
+                break;
+            }
+        }
+
+        //Opcode
+        else if (opcode == "Call")
+        {
+            if (temp.getNOperands() == 1)
+            {
+
+                string op1 = temp.getOp1();
+                int sizeOp1 = op1.length();
+                bool check = checkSpace(op1);
+                if (check == true)
+                {
+                    int addressError = this->ip - 1;
+                    InvalidInstruction e = InvalidInstruction(addressError);
+                    throw e;
+                    break;
+                }
+                else
+                {
+                    if (op1[0] == 'R')
+                    {
+                        int index1 = checkRegister(op1, sizeOp1); //return R index;
+                        if (index1 >= 1 && index1 <= 15)
+                        {
+                            index1 = index1 - 1;
+                            int check1 = this->Register[index1].getTypeData();
+                            if (check1 == 4)
+                            {
+                                int address = this->Register[index1].getAddress();
+                                if (address >= 0 && address <= lengthOfCode - 1)
+                                {
+                                    sp++;
+                                    if (sp > 999)
+                                    {
+                                        int addressError = this->ip;
+                                        StackFull e = StackFull(addressError);
+                                        throw e;
+                                        break;
+                                    }
+                                    else
+                                    {
+                                        int valueIP = this->ip;
+                                        this->stack[sp] = valueIP;
+                                        this->ip = address;
+                                    }
+                                }
+                                else
+                                {
+                                    int addressError = this->ip - 1;
+                                    InvalidDestination e = InvalidDestination(addressError);
+                                    throw e;
+                                    break;
+                                }
+                            }
+                            else if (check1 == 0)
+                            {
+                                int addressError = this->ip - 1;
+                                InvalidOperand e = InvalidOperand(addressError);
+                                throw e;
+                                break;
+                            }
+                            else
+                            {
+                                int addressError = this->ip - 1;
+                                TypeMismatch e = TypeMismatch(addressError);
+                                throw e;
+                                break;
+                            }
+                        }
+                        else
+                        {
+                            int addressError = this->ip - 1;
+                            InvalidOperand e = InvalidOperand(addressError);
+                            throw e;
+                            break;
+                        }
+                    }
+                    else if (op1[0] != 'R')
+                    {
+                        DataStorage value;
+                        int checkLiteral = checkOperand2(op1, value);
+                        if (checkLiteral == 4)
+                        {
+                            int address = value.getAddress();
+                            if (address >= 0 && address <= lengthOfCode - 1)
+                            {
+                                sp++;
+                                int valueIP = this->ip;
+                                this->stack[sp] = valueIP;
+                                this->ip = address;
+                            }
+                            else
+                            {
+                                int addressError = this->ip - 1;
+                                InvalidDestination e = InvalidDestination(addressError);
+                                throw e;
+                                break;
+                            }
+                        }
+                        else if (checkLiteral == 0)
+                        {
+                            int addressError = this->ip - 1;
+                            InvalidOperand e = InvalidOperand(addressError);
+                            throw e;
+                            break;
+                        }
+                        else
+                        {
+                            int addressError = this->ip - 1;
+                            TypeMismatch e = TypeMismatch(addressError);
+                            throw e;
+                            break;
+                        }
+                    }
+                }
+            }
+            else
+            {
+                int addressError = this->ip - 1;
+                InvalidInstruction e = InvalidInstruction(addressError);
+                throw e;
+                break;
+            }
+        }
+        else if (opcode == "Return")
+        {
+            if (temp.getNOperands() == 0)
+            {
+                int valueSP = this->stack[sp];
+                this->ip = valueSP;
+            }
+            else
+            {
+                int addressError = this->ip - 1;
+                InvalidInstruction e = InvalidInstruction(addressError);
+                throw e;
+                break;
+            }
+        }
+        else if (opcode == "Halt")
+        {
+            if (temp.getNOperands() == 0)
+            {
+                return;
+            }
+            else
+            {
+                int addressError = this->ip - 1;
+                InvalidInstruction e = InvalidInstruction(addressError);
+                throw e;
+                break;
+            }
+        }
+        else if (opcode == "Input")
+        {
+
+            if (temp.getNOperands() == 1)
+            {
+
+                string op1 = temp.getOp1();
+                int sizeOp1 = op1.length();
+                bool check = checkSpace(op1);
+                if (check == true)
+                {
+                    int addressError = this->ip - 1;
+                    InvalidInstruction e = InvalidInstruction(addressError);
+                    throw e;
+                    break;
+                }
+                else
+                {
+                    if (op1[0] == 'R')
+                    {
+                        int index1 = checkRegister(op1, sizeOp1); //return R index;
+                        if (index1 >= 1 && index1 <= 15)
+                        {
+                            DataStorage value;
+                            string inputLiteral = "";
+                            getline(cin, inputLiteral);
+                            int checkLiteral = checkOperand2(inputLiteral, value);
+                            index1 = index1 - 1;
+                            if (checkLiteral == 0)
+                            {
+                                int addressError = this->ip - 1;
+                                InvalidInput e = InvalidInput(addressError);
+                                throw e;
+                                break;
+                            }
+                            else if (checkLiteral == 1)
+                            {
+                                this->Register[index1].setDataInt(value.getDataInt());
+                            }
+                            else if (checkLiteral == 2)
+                            {
+                                this->Register[index1].setDataFloat(value.getDataFloat());
+                            }
+                            if (checkLiteral == 3)
+                            {
+                                this->Register[index1].setDataBool(value.getDataBool());
+                            }
+
+                            else
+                            {
+                                int addressError = this->ip - 1;
+                                TypeMismatch e = TypeMismatch(addressError);
+                                throw e;
+                                break;
+                            }
+                        }
+                        else
+                        {
+                            int addressError = this->ip - 1;
+                            InvalidOperand e = InvalidOperand(addressError);
+                            throw e;
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        int addressError = this->ip - 1;
+                        InvalidOperand e = InvalidOperand(addressError);
+                        throw e;
+                        break;
+                    }
+                }
+            }
+            else
+            {
+                int addressError = this->ip - 1;
+                InvalidInstruction e = InvalidInstruction(addressError);
+                throw e;
+                break;
+            }
+        }
+        else if (opcode == "Output")
+        {
+
+            if (temp.getNOperands() == 1)
+            {
+
+                string op1 = temp.getOp1();
+                int sizeOp1 = op1.length();
+                bool check = checkSpace(op1);
+                if (check == true)
+                {
+                    int addressError = this->ip - 1;
+                    InvalidInstruction e = InvalidInstruction(addressError);
+                    throw e;
+                    break;
+                }
+                else
+                {
+                    if (op1[0] == 'R')
+                    {
+                        int index1 = checkRegister(op1, sizeOp1); //return R index;
+                        if (index1 >= 1 && index1 <= 15)
+                        {
+                            index1 = index1 - 1;
+                            int check1 = this->Register[index1].getTypeData();
+                            if (check1 == 0)
+                            {
+                                int addressError = this->ip - 1;
+                                TypeMismatch e = TypeMismatch(addressError);
+                                throw e;
+                                break;
+                            }
+                            else if (check1 == 1)
+                            {
+                            }
+                            else if (check1 == 2)
+                            {
+                            }
+                            else if (check1 == 3)
+                            {
+                            }
+                            else
+                            {
+                                int addressError = this->ip - 1;
+                                TypeMismatch e = TypeMismatch(addressError);
+                                throw e;
+                                break;
+                            }
+                        }
+                        else
+                        {
+                            int addressError = this->ip - 1;
+                            InvalidOperand e = InvalidOperand(addressError);
+                            throw e;
+                            break;
+                        }
+                    }
+                    else if (op1[0] != 'R')
+                    {
+                        DataStorage value;
+                        int checkLiteral = checkOperand2(op1, value);
+                        if (checkLiteral == 4)
+                        {
+                            int address = value.getAddress();
+                            if (address >= 0 && address <= lengthOfCode - 1)
+                            {
+                                sp++;
+                                int valueIP = this->ip;
+                                this->stack[sp] = valueIP;
+                                this->ip = address;
+                            }
+                            else
+                            {
+                                int addressError = this->ip - 1;
+                                InvalidDestination e = InvalidDestination(addressError);
+                                throw e;
+                                break;
+                            }
+                        }
+                        else if (checkLiteral == 0)
+                        {
+                            int addressError = this->ip - 1;
+                            InvalidOperand e = InvalidOperand(addressError);
+                            throw e;
+                            break;
+                        }
+                        else
+                        {
+                            int addressError = this->ip - 1;
+                            TypeMismatch e = TypeMismatch(addressError);
+                            throw e;
+                            break;
+                        }
+                    }
+                }
+            }
+            else
+            {
+                int addressError = this->ip - 1;
+                InvalidInstruction e = InvalidInstruction(addressError);
+                throw e;
+                break;
+            }
+        }
+        //opcode
         else
         {
             int address = this->ip - 1;
@@ -2425,8 +3062,8 @@ void VM::cpu()
             throw e;
             break;
         }
-    } //Else if sum of opcode
-};    //while loop
+    }
+};
 
 Instruction Instruction::getElementInstruction(string str)
 {
