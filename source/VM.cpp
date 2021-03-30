@@ -2405,9 +2405,11 @@ Instruction Instruction::getElementInstruction(string str)
             }
         }
         else
-        {
+        
             break;
-        }
+        
     }
     return *this;
+
 }
+
