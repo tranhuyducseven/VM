@@ -102,7 +102,7 @@ bool checkSpace(string str)
     }
     return false;
 }
-int checkOperand2(string str, DataStorage &value)
+int checkOperand2(string str, DataStorage& value)
 {
     //return 0 when wrong
     //flag==1 int
@@ -309,7 +309,7 @@ int Instruction::getNOperands()
 {
     return this->nOperands;
 }
-Instruction::~Instruction(){};
+Instruction::~Instruction() {};
 //VM CLASS
 /////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////
@@ -324,7 +324,7 @@ VM::VM()
     this->staticMemory = nullptr;
     this->instr = nullptr;
 }
-VM::VM(Instruction *instr, int ip, int nCode)
+VM::VM(Instruction* instr, int ip, int nCode)
 {
     this->ip = ip;
     this->nCode = nCode;
@@ -380,12 +380,12 @@ void VM::run(string filename)
 
         readCode(filename);
         int numlines = this->nCode;
-        Instruction *instructions = new Instruction[numlines];
+        Instruction* instructions = new Instruction[numlines];
         for (int i = 0; i < numlines; i++)
         {
             instructions[i] = instructions[i].getElementInstruction(this->codes[i]);
         }
-        VM *newVM = new VM(instructions, 0, numlines);
+        VM* newVM = new VM(instructions, 0, numlines);
         newVM->Register = new DataStorage[15];
         newVM->staticMemory = new DataStorage[65536];
         newVM->stack = new int[1000];
@@ -1963,9 +1963,7 @@ void VM::cpu()
                 else if (op2[0] != 'R')
                 {
                     DataStorage value;
-
                     int checkTypeR = this->Register[index1].getTypeData();
-
                     if (checkTypeR == 4)
                     {
                         int address = this->Register[index1].getAddress();
@@ -1979,7 +1977,7 @@ void VM::cpu()
 
                         else
                         {
-                            int checkValueOfSrc = value.getTypeData();
+                            int checkValueOfSrc = checkOperand2(op2, value);
                             if (checkValueOfSrc == 1)
                             {
                                 int dataInt = value.getDataInt();
