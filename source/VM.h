@@ -1,6 +1,5 @@
 #ifndef VM_H
 #define VM_H
-
 #include "main.h"
 class VM;
 class DataStorage;
@@ -84,5 +83,4 @@ public:
 	void cpu();
 	~VM();
 };
-
 #endif
