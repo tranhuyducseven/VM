@@ -332,6 +332,7 @@ VM::VM(Instruction *instr, int ip, int nCode)
     {
         this->instr[i] = instr[i];
     }
+    this->sp = -1;
 }
 VM::~VM()
 {
@@ -2194,10 +2195,10 @@ void VM::cpu()
                         int address = this->Register[index1].getAddress();
                         if (address >= 0 && address <= lengthOfCode - 1)
                         {
-                            sp++;
-                            if (sp > 999)
+                            this->sp++;
+                            if (this->sp > 999)
                             {
-                                int addressError = this->ip;
+                                int addressError = this->ip-1;
                                 StackFull e = StackFull(addressError);
                                 throw e;
                                 break;
