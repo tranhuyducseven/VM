@@ -10,6 +10,7 @@ int pow(int base, int exp)
 ///////////
 string eraseChar(string str, char c)
 {
+
     int n = str.length();
     string newString = "";
     for (int i = 0; i < n; i++)
@@ -101,7 +102,7 @@ bool checkSpace(string str)
     }
     return false;
 }
-int checkOperand2(string str, DataStorage& value)
+int checkOperand2(string str, DataStorage &value)
 {
     //return 0 when wrong
     //flag==1 int
@@ -160,8 +161,8 @@ int checkOperand2(string str, DataStorage& value)
             else
                 return 0;
         }
-        int k = i + 1;
-        for (k; k < length; k++)
+
+        for (int k = i + 1; k < length; k++)
         {
             if (str[k] >= '0' && str[k] <= '9')
             {
@@ -179,8 +180,8 @@ int checkOperand2(string str, DataStorage& value)
     else if (flag == 1)
     {
         int num = 0;
-        int t = 0;
-        for (t; t < length; t++)
+
+        for (int t = 0; t < length; t++)
         {
             if (str[t] >= '0' && str[t] <= '9')
             {
@@ -308,7 +309,7 @@ int Instruction::getNOperands()
 {
     return this->nOperands;
 }
-Instruction::~Instruction() {};
+Instruction::~Instruction(){};
 //VM CLASS
 /////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////
@@ -323,7 +324,7 @@ VM::VM()
     this->staticMemory = nullptr;
     this->instr = nullptr;
 }
-VM::VM(Instruction* instr, int ip, int nCode)
+VM::VM(Instruction *instr, int ip, int nCode)
 {
     this->ip = ip;
     this->nCode = nCode;
@@ -332,6 +333,7 @@ VM::VM(Instruction* instr, int ip, int nCode)
     {
         this->instr[i] = instr[i];
     }
+    this->sp = -1;
 }
 VM::~VM()
 {
@@ -346,7 +348,6 @@ void VM::readCode(string filename)
     fstream fileInput;
     fileInput.open(filename);
     char c;
-    int numlines = 0;
     fileInput.get(c);
     int i = 0;
     while (fileInput)
@@ -379,12 +380,12 @@ void VM::run(string filename)
 
         readCode(filename);
         int numlines = this->nCode;
-        Instruction* instructions = new Instruction[numlines];
+        Instruction *instructions = new Instruction[numlines];
         for (int i = 0; i < numlines; i++)
         {
             instructions[i] = instructions[i].getElementInstruction(this->codes[i]);
         }
-        VM* newVM = new VM(instructions, 0, numlines);
+        VM *newVM = new VM(instructions, 0, numlines);
         newVM->Register = new DataStorage[15];
         newVM->staticMemory = new DataStorage[65536];
         newVM->stack = new int[1000];
@@ -415,7 +416,7 @@ void VM::cpu()
             string op1 = temp.getOp1();
             int sizeOp1 = op1.length();
             int index1 = checkRegister(op1, sizeOp1); //return R index;
-            if (index1 < 1 && index1 > 15)
+            if (index1 < 1 || index1 > 15)
             {
                 checkLoadingError = true;
                 int addressError = this->ip - 1;
@@ -446,7 +447,7 @@ void VM::cpu()
             if (op2[0] == 'R')
             {
                 int index2 = checkRegister(op2, sizeOp2); //return R index;
-                if (index2 < 1 && index2 > 15)
+                if (index2 < 1 || index2 > 15)
                 {
                     checkLoadingError = true;
                     int addressError = this->ip - 1;
@@ -454,10 +455,6 @@ void VM::cpu()
                     throw e;
                     break;
                 }
-                index2 = index2 - 1;
-
-                int check2 = this->Register[index2].getTypeData();
-               
             }
             else if (op2[0] != 'R')
             {
@@ -489,7 +486,7 @@ void VM::cpu()
             if (op1[0] == 'R')
             {
                 int index1 = checkRegister(op1, sizeOp1); //return R index;
-                if (index1 < 1 && index1 > 15)
+                if (index1 < 1 || index1 > 15)
 
                 {
                     checkLoadingError = true;
@@ -524,7 +521,7 @@ void VM::cpu()
             if (op1[0] == 'R')
             {
                 int index1 = checkRegister(op1, sizeOp1); //return R index;
-                if (index1 < 1 && index1 > 15)
+                if (index1 < 1 || index1 > 15)
 
                 {
                     checkLoadingError = true;
@@ -568,9 +565,9 @@ void VM::cpu()
             break;
         }
     }
+    this->ip = 0;
     if (!checkLoadingError)
     {
-        this->ip = 0;
         while (this->ip < lengthOfCode)
         {
             Instruction temp = this->instr[ip];
@@ -601,12 +598,12 @@ void VM::cpu()
                         else if (check1 == 1 && check2 == 2)
                         {
                             double data = this->Register[index2].getDataFloat();
-                            this->Register[index1].setDataFloat(this->Register[index1].getDataInt() + data);
+                            this->Register[index1].setDataFloat((double)(this->Register[index1].getDataInt()) + data);
                         }
                         else if (check1 == 2 && check2 == 1)
                         {
                             int data = this->Register[index2].getDataInt();
-                            this->Register[index1].setDataFloat(this->Register[index1].getDataFloat() + data);
+                            this->Register[index1].setDataFloat(this->Register[index1].getDataFloat() + (double)(data));
                         }
                         else if (check1 == 2 && check2 == 2)
                         {
@@ -631,12 +628,12 @@ void VM::cpu()
                         else if (check1 == 1 && check2 == 2)
                         {
                             double data = this->Register[index2].getDataFloat();
-                            this->Register[index1].setDataFloat(this->Register[index1].getDataInt() - data);
+                            this->Register[index1].setDataFloat((double)(this->Register[index1].getDataInt()) - data);
                         }
                         else if (check1 == 2 && check2 == 1)
                         {
                             int data = this->Register[index2].getDataInt();
-                            this->Register[index1].setDataFloat(this->Register[index1].getDataFloat() - data);
+                            this->Register[index1].setDataFloat(this->Register[index1].getDataFloat() - (double)(data));
                         }
                         else if (check1 == 2 && check2 == 2)
                         {
@@ -661,12 +658,12 @@ void VM::cpu()
                         else if (check1 == 1 && check2 == 2)
                         {
                             double data = this->Register[index2].getDataFloat();
-                            this->Register[index1].setDataFloat(this->Register[index1].getDataInt() * data);
+                            this->Register[index1].setDataFloat((double)(this->Register[index1].getDataInt()) * data);
                         }
                         else if (check1 == 2 && check2 == 1)
                         {
                             int data = this->Register[index2].getDataInt();
-                            this->Register[index1].setDataFloat(this->Register[index1].getDataFloat() * data);
+                            this->Register[index1].setDataFloat(this->Register[index1].getDataFloat() * (double)(data));
                         }
                         else if (check1 == 2 && check2 == 2)
                         {
@@ -711,7 +708,7 @@ void VM::cpu()
                             else
                             {
                                 double data = this->Register[index2].getDataFloat();
-                                this->Register[index1].setDataFloat(this->Register[index1].getDataInt() / data);
+                                this->Register[index1].setDataFloat((double)(this->Register[index1].getDataInt()) / data);
                             }
                         }
                         else if (check1 == 2 && check2 == 1)
@@ -726,7 +723,7 @@ void VM::cpu()
                             else
                             {
                                 int data = this->Register[index2].getDataInt();
-                                this->Register[index1].setDataFloat(this->Register[index1].getDataFloat() / data);
+                                this->Register[index1].setDataFloat((double)(this->Register[index1].getDataFloat()) / data);
                             }
                         }
                         else if (check1 == 2 && check2 == 2)
@@ -763,23 +760,22 @@ void VM::cpu()
                     {
                         if (checkTypeR == 1 && checkLiteral == 1)
                         {
-                            int data = value.getDataInt();
-                            this->Register[index1].setDataInt(value.getDataInt() + data);
+                            this->Register[index1].setDataInt(this->Register[index1].getDataInt() + value.getDataInt());
                         }
                         else if (checkTypeR == 1 && checkLiteral == 2)
                         {
-                            double data = value.getDataFloat();
-                            this->Register[index1].setDataFloat(value.getDataInt() + data);
+
+                            this->Register[index1].setDataFloat((double)(this->Register[index1].getDataInt()) + value.getDataFloat());
                         }
                         else if (checkTypeR == 2 && checkLiteral == 1)
                         {
-                            int data = value.getDataInt();
-                            this->Register[index1].setDataFloat(value.getDataFloat() + data);
+
+                            this->Register[index1].setDataFloat(this->Register[index1].getDataFloat() + (double)(value.getDataInt()));
                         }
                         else if (checkTypeR == 2 && checkLiteral == 2)
                         {
-                            double data = value.getDataFloat();
-                            this->Register[index1].setDataFloat(value.getDataFloat() + data);
+
+                            this->Register[index1].setDataFloat(value.getDataFloat() + this->Register[index1].getDataFloat());
                         }
                         else
                         {
@@ -793,23 +789,22 @@ void VM::cpu()
                     {
                         if (checkTypeR == 1 && checkLiteral == 1)
                         {
-                            int data = value.getDataInt();
-                            this->Register[index1].setDataInt(value.getDataInt() - data);
+                            this->Register[index1].setDataInt(this->Register[index1].getDataInt() - value.getDataInt());
                         }
                         else if (checkTypeR == 1 && checkLiteral == 2)
                         {
-                            double data = value.getDataFloat();
-                            this->Register[index1].setDataFloat(value.getDataInt() - data);
+
+                            this->Register[index1].setDataFloat((double)(this->Register[index1].getDataInt()) - value.getDataFloat());
                         }
                         else if (checkTypeR == 2 && checkLiteral == 1)
                         {
-                            int data = value.getDataInt();
-                            this->Register[index1].setDataFloat(value.getDataFloat() - data);
+
+                            this->Register[index1].setDataFloat(this->Register[index1].getDataFloat() - (double)(value.getDataInt()));
                         }
                         else if (checkTypeR == 2 && checkLiteral == 2)
                         {
-                            double data = value.getDataFloat();
-                            this->Register[index1].setDataFloat(value.getDataFloat() - data);
+
+                            this->Register[index1].setDataFloat(value.getDataFloat() - this->Register[index1].getDataFloat());
                         }
                         else
                         {
@@ -823,23 +818,22 @@ void VM::cpu()
                     {
                         if (checkTypeR == 1 && checkLiteral == 1)
                         {
-                            int data = value.getDataInt();
-                            this->Register[index1].setDataInt(value.getDataInt() * data);
+                            this->Register[index1].setDataInt(this->Register[index1].getDataInt() * value.getDataInt());
                         }
                         else if (checkTypeR == 1 && checkLiteral == 2)
                         {
-                            double data = value.getDataFloat();
-                            this->Register[index1].setDataFloat(value.getDataInt() * data);
+
+                            this->Register[index1].setDataFloat((double)(this->Register[index1].getDataInt()) * value.getDataFloat());
                         }
                         else if (checkTypeR == 2 && checkLiteral == 1)
                         {
-                            int data = value.getDataInt();
-                            this->Register[index1].setDataFloat(value.getDataFloat() * data);
+
+                            this->Register[index1].setDataFloat(this->Register[index1].getDataFloat() * (double)(value.getDataInt()));
                         }
                         else if (checkTypeR == 2 && checkLiteral == 2)
                         {
-                            double data = value.getDataFloat();
-                            this->Register[index1].setDataFloat(value.getDataFloat() * data);
+
+                            this->Register[index1].setDataFloat(value.getDataFloat() * this->Register[index1].getDataFloat());
                         }
                         else
                         {
@@ -862,8 +856,8 @@ void VM::cpu()
                             }
                             else
                             {
-                                int data = value.getDataInt();
-                                this->Register[index1].setDataInt(value.getDataInt() / data);
+
+                                this->Register[index1].setDataInt(this->Register[index1].getDataInt() / value.getDataInt());
                             }
                         }
                         else if (checkTypeR == 1 && checkLiteral == 2)
@@ -877,8 +871,8 @@ void VM::cpu()
                             }
                             else
                             {
-                                double data = value.getDataFloat();
-                                this->Register[index1].setDataFloat(value.getDataInt() / data);
+
+                                this->Register[index1].setDataFloat((double)(this->Register[index1]).getDataInt() / value.getDataInt());
                             }
                         }
                         else if (checkTypeR == 2 && checkLiteral == 1)
@@ -892,8 +886,7 @@ void VM::cpu()
                             }
                             else
                             {
-                                int data = value.getDataInt();
-                                this->Register[index1].setDataFloat(value.getDataFloat() / data);
+                                this->Register[index1].setDataFloat(this->Register[index1].getDataFloat() / (double)(value.getDataInt()));
                             }
                         }
                         else if (checkTypeR == 2 && checkLiteral == 2)
@@ -907,8 +900,7 @@ void VM::cpu()
                             }
                             else
                             {
-                                double data = value.getDataFloat();
-                                this->Register[index1].setDataFloat(value.getDataFloat() / data);
+                                this->Register[index1].setDataFloat(this->Register[index1].getDataFloat() / value.getDataFloat());
                             }
                         }
                         else
@@ -1790,7 +1782,6 @@ void VM::cpu()
                 {
                     DataStorage value;
                     int checkLiteral = checkOperand2(op2, value);
-                    int checkTypeR = this->Register[index1].getTypeData();
                     if (checkLiteral == 1)
                     {
                         this->Register[index1].setDataInt(value.getDataInt());
@@ -1824,7 +1815,7 @@ void VM::cpu()
                     if (check2 == 4)
                     {
                         int address = this->Register[index2].getAddress();
-                        if (address > 65535 && address < 0)
+                        if (address > 65535 || address < 0)
                         {
                             int addressError = this->ip - 1;
                             TypeMismatch e = TypeMismatch(addressError);
@@ -1868,7 +1859,7 @@ void VM::cpu()
                     int address = value.getAddress();
                     if (checkLiteral == 4)
                     {
-                        if (address > 65535 && address < 0)
+                        if (address > 65535 || address < 0)
                         {
                             int addressError = this->ip - 1;
                             TypeMismatch e = TypeMismatch(addressError);
@@ -1924,7 +1915,7 @@ void VM::cpu()
                     {
                         int address = this->Register[index1].getAddress();
 
-                        if (address > 65535 && address < 0)
+                        if (address > 65535 || address < 0)
                         {
                             int addressError = this->ip - 1;
                             TypeMismatch e = TypeMismatch(addressError);
@@ -1952,11 +1943,7 @@ void VM::cpu()
                             }
                             else if (check2 == 4)
                             {
-                                temp.setAddress(this->Register[index2].getAddress());
-                                this->staticMemory[address] = temp;
-                            }
-                            else
-                            {
+
                                 int addressError = this->ip - 1;
                                 TypeMismatch e = TypeMismatch(addressError);
                                 throw e;
@@ -1976,19 +1963,13 @@ void VM::cpu()
                 else if (op2[0] != 'R')
                 {
                     DataStorage value;
-                    int checkLiteral = checkOperand2(op2, value);
+
                     int checkTypeR = this->Register[index1].getTypeData();
-                    if (checkLiteral == 0)
-                    {
-                        int addressError = this->ip - 1;
-                        InvalidInstruction e = InvalidInstruction(addressError);
-                        throw e;
-                        break;
-                    }
+
                     if (checkTypeR == 4)
                     {
                         int address = this->Register[index1].getAddress();
-                        if (address > 65535 && address < 0)
+                        if (address > 65535 || address < 0)
                         {
                             int addressError = this->ip - 1;
                             TypeMismatch e = TypeMismatch(addressError);
@@ -2018,13 +1999,6 @@ void VM::cpu()
                             {
                                 int dataAddress = value.getAddress();
                                 this->staticMemory[address].setDataFloat(dataAddress);
-                            }
-                            else
-                            {
-                                int addressError = this->ip - 1;
-                                TypeMismatch e = TypeMismatch(addressError);
-                                throw e;
-                                break;
                             }
                         }
                     }
@@ -2118,7 +2092,11 @@ void VM::cpu()
                             int address = this->Register[index2].getAddress();
                             if (address >= 0 && address <= lengthOfCode - 1)
                             {
-                                this->ip = address;
+                                if (this->Register[index1].getDataBool())
+                                {
+
+                                    this->ip = address;
+                                }
                             }
                             else
                             {
@@ -2157,7 +2135,10 @@ void VM::cpu()
                             int address = value.getAddress();
                             if (address >= 0 && address <= lengthOfCode - 1)
                             {
-                                this->ip = address;
+                                if (this->Register[index1].getDataBool())
+                                {
+                                    this->ip = address;
+                                }
                             }
                             else
                             {
@@ -2198,10 +2179,10 @@ void VM::cpu()
                         int address = this->Register[index1].getAddress();
                         if (address >= 0 && address <= lengthOfCode - 1)
                         {
-                            sp++;
-                            if (sp > 999)
+                            this->sp++;
+                            if (this->sp > 999)
                             {
-                                int addressError = this->ip;
+                                int addressError = this->ip - 1;
                                 StackFull e = StackFull(addressError);
                                 throw e;
                                 break;
@@ -2239,9 +2220,20 @@ void VM::cpu()
                         if (address >= 0 && address <= lengthOfCode - 1)
                         {
                             sp++;
-                            int valueIP = this->ip;
-                            this->stack[sp] = valueIP;
-                            this->ip = address;
+                            if (sp > 999)
+                            {
+                                int addressError = this->ip - 1;
+                                StackFull e = StackFull(addressError);
+                                throw e;
+                                break;
+                            }
+                            else
+                            {
+
+                                int valueIP = this->ip;
+                                this->stack[sp] = valueIP;
+                                this->ip = address;
+                            }
                         }
                         else
                         {
@@ -2265,6 +2257,7 @@ void VM::cpu()
             {
                 int valueSP = this->stack[sp];
                 this->ip = valueSP;
+                this->sp--;
             }
             else if (opcode == "Halt")
             {
@@ -2294,7 +2287,7 @@ void VM::cpu()
                 {
                     this->Register[index1].setDataFloat(value.getDataFloat());
                 }
-                if (checkLiteral == 3)
+                else if (checkLiteral == 3)
                 {
                     this->Register[index1].setDataBool(value.getDataBool());
                 }
@@ -2360,7 +2353,7 @@ void VM::cpu()
                     }
                     else if (checkLiteral == 4)
                     {
-                        cout<<value.getAddress() <<"A";
+                        cout << value.getAddress() << 'A';
                     }
                 }
             }
@@ -2375,16 +2368,19 @@ Instruction Instruction::getElementInstruction(string str)
     int i = 0;
     while (Code[i] != '\0')
     {
-        for (i; !(Code[i] == ' ' || Code[i] == '\0'); i++)
+
+        while (!(Code[i] == ' ' || Code[i] == '\0'))
         {
             this->nameOpcode += Code[i];
+            i++;
         }
         if (!(Code[i] == '\0'))
         {
             ++i;
-            for (i; !(Code[i] == ',' || Code[i] == '\0'); i++)
+            while (!(Code[i] == ',' || Code[i] == '\0'))
             {
                 this->op1 += Code[i];
+                i++;
             }
             this->nOperands++;
             if (Code[i] == ',')
@@ -2399,9 +2395,8 @@ Instruction Instruction::getElementInstruction(string str)
             }
         }
         else
-        {
+
             break;
-        }
     }
     return *this;
 }
