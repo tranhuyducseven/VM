@@ -101,7 +101,7 @@ bool checkSpace(string str)
     }
     return false;
 }
-int checkOperand2(string str, DataStorage &value)
+int checkOperand2(string str, DataStorage& value)
 {
     //return 0 when wrong
     //flag==1 int
@@ -240,7 +240,7 @@ void DataStorage::setDataFloat(double data)
 {
     this->dataFloat = data;
     this->checkType = 2;
-    this->dataInt = data;
+    this->dataInt = 0;
     this->dataAddress = 0;
     this->dataBool = false;
 }
@@ -308,7 +308,7 @@ int Instruction::getNOperands()
 {
     return this->nOperands;
 }
-Instruction::~Instruction(){};
+Instruction::~Instruction() {};
 //VM CLASS
 /////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////
@@ -323,7 +323,7 @@ VM::VM()
     this->staticMemory = nullptr;
     this->instr = nullptr;
 }
-VM::VM(Instruction *instr, int ip, int nCode)
+VM::VM(Instruction* instr, int ip, int nCode)
 {
     this->ip = ip;
     this->nCode = nCode;
@@ -379,12 +379,12 @@ void VM::run(string filename)
 
         readCode(filename);
         int numlines = this->nCode;
-        Instruction *instructions = new Instruction[numlines];
+        Instruction* instructions = new Instruction[numlines];
         for (int i = 0; i < numlines; i++)
         {
             instructions[i] = instructions[i].getElementInstruction(this->codes[i]);
         }
-        VM *newVM = new VM(instructions, 0, numlines);
+        VM* newVM = new VM(instructions, 0, numlines);
         newVM->Register = new DataStorage[15];
         newVM->staticMemory = new DataStorage[65536];
         newVM->stack = new int[1000];
@@ -457,14 +457,7 @@ void VM::cpu()
                 index2 = index2 - 1;
 
                 int check2 = this->Register[index2].getTypeData();
-                if (check2 == 0)
-                {
-                    checkLoadingError = true;
-                    int addressError = this->ip - 1;
-                    InvalidOperand e = InvalidOperand(addressError);
-                    throw e;
-                    break;
-                }
+               
             }
             else if (op2[0] != 'R')
             {
@@ -577,6 +570,7 @@ void VM::cpu()
     }
     if (!checkLoadingError)
     {
+        this->ip = 0;
         while (this->ip < lengthOfCode)
         {
             Instruction temp = this->instr[ip];
@@ -2366,7 +2360,7 @@ void VM::cpu()
                     }
                     else if (checkLiteral == 4)
                     {
-                        value.getAddress() << 'A';
+                        cout<<value.getAddress() <<"A";
                     }
                 }
             }
