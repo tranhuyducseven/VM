@@ -240,7 +240,7 @@ void DataStorage::setDataFloat(double data)
 {
     this->dataFloat = data;
     this->checkType = 2;
-    this->dataInt = data;
+    this->dataInt = 0;
     this->dataAddress = 0;
     this->dataBool = false;
 }
@@ -415,7 +415,7 @@ void VM::cpu()
             string op1 = temp.getOp1();
             int sizeOp1 = op1.length();
             int index1 = checkRegister(op1, sizeOp1); //return R index;
-            if (index1 < 1 && index1 > 15)
+            if (index1 < 1 || index1 > 15)
             {
                 checkLoadingError = true;
                 int addressError = this->ip - 1;
@@ -446,18 +446,7 @@ void VM::cpu()
             if (op2[0] == 'R')
             {
                 int index2 = checkRegister(op2, sizeOp2); //return R index;
-                if (index2 < 1 && index2 > 15)
-                {
-                    checkLoadingError = true;
-                    int addressError = this->ip - 1;
-                    InvalidOperand e = InvalidOperand(addressError);
-                    throw e;
-                    break;
-                }
-                index2 = index2 - 1;
-
-                int check2 = this->Register[index2].getTypeData();
-                if (check2 == 0)
+                if (index2 < 1 || index2 > 15)
                 {
                     checkLoadingError = true;
                     int addressError = this->ip - 1;
@@ -496,7 +485,7 @@ void VM::cpu()
             if (op1[0] == 'R')
             {
                 int index1 = checkRegister(op1, sizeOp1); //return R index;
-                if (index1 < 1 && index1 > 15)
+                if (index1 < 1 || index1 > 15)
 
                 {
                     checkLoadingError = true;
@@ -531,7 +520,7 @@ void VM::cpu()
             if (op1[0] == 'R')
             {
                 int index1 = checkRegister(op1, sizeOp1); //return R index;
-                if (index1 < 1 && index1 > 15)
+                if (index1 < 1 || index1 > 15)
 
                 {
                     checkLoadingError = true;
@@ -575,6 +564,7 @@ void VM::cpu()
             break;
         }
     }
+    this->ip = 0;
     if (!checkLoadingError)
     {
         while (this->ip < lengthOfCode)
@@ -2214,7 +2204,7 @@ void VM::cpu()
                             }
                             else
                             {
-                                int valueIP = this->ip;
+                                int valueIP = this->ip - 1;
                                 this->stack[sp] = valueIP;
                                 this->ip = address;
                             }
@@ -2245,9 +2235,20 @@ void VM::cpu()
                         if (address >= 0 && address <= lengthOfCode - 1)
                         {
                             sp++;
-                            int valueIP = this->ip;
-                            this->stack[sp] = valueIP;
-                            this->ip = address;
+                            if (sp > 999)
+                            {
+                                int addressError = this->ip - 1;
+                                StackFull e = StackFull(addressError);
+                                throw e;
+                                break;
+                            }
+                            else
+                            {
+
+                                int valueIP = this->ip - 1;
+                                this->stack[sp] = valueIP;
+                                this->ip = address;
+                            }
                         }
                         else
                         {
@@ -2300,7 +2301,7 @@ void VM::cpu()
                 {
                     this->Register[index1].setDataFloat(value.getDataFloat());
                 }
-                if (checkLiteral == 3)
+                else if (checkLiteral == 3)
                 {
                     this->Register[index1].setDataBool(value.getDataBool());
                 }
@@ -2366,7 +2367,7 @@ void VM::cpu()
                     }
                     else if (checkLiteral == 4)
                     {
-                        value.getAddress() << 'A';
+                        cout << value.getAddress() << 'A';
                     }
                 }
             }
@@ -2405,11 +2406,8 @@ Instruction Instruction::getElementInstruction(string str)
             }
         }
         else
-        
+
             break;
-        
     }
     return *this;
-
 }
-
