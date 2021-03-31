@@ -1,5 +1,6 @@
 #ifndef VM_H
 #define VM_H
+
 #include "main.h"
 class VM;
 class DataStorage;
@@ -8,7 +9,7 @@ int pow(int base, int exp);
 string eraseChar(string str, char c);
 string eraseCharAtIndex(string str, int index);
 int checkRegister(string string, int sizeOfString);
-int checkOperand2(string str, DataStorage &value);
+int checkOperand2(string str, DataStorage& value);
 int countNCode(string filename);
 class DataStorage
 {
@@ -66,21 +67,22 @@ class VM
 {
 
 private:
-	string *codes;
-	int *stack;
-	DataStorage *staticMemory;
-	DataStorage *Register;
+	string* codes;
+	int* stack;
+	DataStorage* staticMemory;
+	DataStorage* Register;
 	int nCode;
 	int ip;
-	int sp;
-	Instruction *instr;
+	int sp=-1;
+	Instruction* instr;
 
 public:
 	VM();
-	VM(Instruction *instr, int ip, int nCode);
+	VM(Instruction* instr, int ip, int nCode);
 	void run(string filename);
 	void readCode(string filename);
 	void cpu();
 	~VM();
 };
+
 #endif
