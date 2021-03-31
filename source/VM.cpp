@@ -335,13 +335,7 @@ VM::VM(Instruction *instr, int ip, int nCode)
     }
     this->sp = -1;
 }
-VM::~VM()
-{
-    delete[] this->codes;
-    delete[] this->Register;
-    delete[] this->staticMemory;
-    delete[] this->stack;
-};
+VM::~VM(){};
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void VM::readCode(string filename)
 {
@@ -350,6 +344,7 @@ void VM::readCode(string filename)
     char c;
     fileInput.get(c);
     int i = 0;
+    //int numlines=0;
     while (fileInput)
     {
         while (fileInput && c != '\n')
@@ -358,6 +353,7 @@ void VM::readCode(string filename)
             fileInput.get(c);
         }
         i++;
+        //++numlines;
         fileInput.get(c);
     }
 }
@@ -382,7 +378,11 @@ void VM::run(string filename)
     newVM->staticMemory = new DataStorage[65536];
     newVM->stack = new int[1000];
     newVM->cpu();
-     delete newVM;    
+    delete[] newVM->Register;
+    delete[] newVM->staticMemory;
+    delete[] newVM->stack;
+    delete newVM;
+    delete[] instructions;
 }
 
 void VM::cpu()
@@ -2069,6 +2069,7 @@ void VM::cpu()
                 string op2 = temp.getOp2();
                 op2 = eraseCharAtIndex(op2, 0);
                 int sizeOp2 = op2.length();
+                ////////////
                 if (op2[0] == 'R')
                 {
                     int index2 = checkRegister(op2, sizeOp2) - 1;
@@ -2076,31 +2077,30 @@ void VM::cpu()
                     int check2 = this->Register[index2].getTypeData();
                     if (check1 == 3)
                     {
-                        if (check2 == 4)
+                        if (this->Register[index1].getDataBool())
                         {
-                            int address = this->Register[index2].getAddress();
-                            if (address >= 0 && address <= lengthOfCode - 1)
+                            if (check2 == 4)
                             {
-                                if (this->Register[index1].getDataBool())
+                                int address = this->Register[index2].getAddress();
+                                if (address >= 0 && address <= lengthOfCode - 1)
                                 {
-
                                     this->ip = address;
+                                }
+                                else
+                                {
+                                    int addressError = this->ip - 1;
+                                    InvalidDestination e = InvalidDestination(addressError);
+                                    throw e;
+                                    break;
                                 }
                             }
                             else
                             {
                                 int addressError = this->ip - 1;
-                                InvalidDestination e = InvalidDestination(addressError);
+                                TypeMismatch e = TypeMismatch(addressError);
                                 throw e;
                                 break;
                             }
-                        }
-                        else
-                        {
-                            int addressError = this->ip - 1;
-                            TypeMismatch e = TypeMismatch(addressError);
-                            throw e;
-                            break;
                         }
                     }
                     else
@@ -2119,31 +2119,30 @@ void VM::cpu()
                     int checkTypeR = this->Register[index1].getTypeData();
                     if (checkTypeR == 3)
                     {
-                        if (checkLiteral == 4)
+                        if (this->Register[index1].getDataBool())
                         {
-                            int address = value.getAddress();
-                            if (address >= 0 && address <= lengthOfCode - 1)
+                            if (checkLiteral == 4)
                             {
-                                if (this->Register[index1].getDataBool())
+                                int address = value.getAddress();
+                                if (address >= 0 && address <= lengthOfCode - 1)
                                 {
                                     this->ip = address;
+                                }
+                                else
+                                {
+                                    int addressError = this->ip - 1;
+                                    InvalidDestination e = InvalidDestination(addressError);
+                                    throw e;
+                                    break;
                                 }
                             }
                             else
                             {
                                 int addressError = this->ip - 1;
-                                InvalidDestination e = InvalidDestination(addressError);
+                                TypeMismatch e = TypeMismatch(addressError);
                                 throw e;
                                 break;
                             }
-                        }
-
-                        else
-                        {
-                            int addressError = this->ip - 1;
-                            TypeMismatch e = TypeMismatch(addressError);
-                            throw e;
-                            break;
                         }
                     }
                     else

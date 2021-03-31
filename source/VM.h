@@ -40,7 +40,7 @@ public:
 	void setAddress(int);
 	int getTypeData();
 	void setTypeData(int check);
-	~DataStorage();
+	virtual ~DataStorage();
 };
 class Instruction
 {
@@ -82,7 +82,7 @@ public:
 	void run(string filename);
 	void readCode(string filename);
 	void cpu();
-	~VM();
+	virtual ~VM();
 };
 
 #endif
