@@ -36,19 +36,29 @@ string eraseCharAtIndex(string str, int index)
 }
 int countNCode(string filename)
 {
-    fstream fileInput;
-    fileInput.open(filename, ios::in);
+    ifstream fileInput;
+    fileInput.open(filename);
     char c;
     int numlines = 0;
-    fileInput.get(c);
     while (fileInput)
     {
+        string line = "";
+        fileInput.get(c);
         while (fileInput && c != '\n')
         {
+            while (fileInput && c == '\r')
+            {
+                fileInput.get(c);
+            }
+            if (c == '\n')
+            {
+                line += c;
+                break;
+            }
+            line += c;
             fileInput.get(c);
         }
-        ++numlines;
-        fileInput.get(c);
+        numlines++;
     }
     return numlines;
 }
@@ -324,37 +334,32 @@ VM::VM()
     this->staticMemory = nullptr;
     this->instr = nullptr;
 }
-VM::VM(Instruction *instr, int ip, int nCode)
-{
-    this->ip = ip;
-    this->nCode = nCode;
-    this->instr = instr;
-    for (int i = 0; i < nCode; i++)
-    {
-        this->instr[i] = instr[i];
-    }
-    this->sp = -1;
-}
 VM::~VM(){};
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void VM::readCode(string filename)
 {
-    fstream fileInput;
+    ifstream fileInput;
     fileInput.open(filename);
     char c;
-    fileInput.get(c);
     int i = 0;
-    //int numlines=0;
     while (fileInput)
     {
+        fileInput.get(c);
         while (fileInput && c != '\n')
         {
+            while (fileInput && c == '\r')
+            {
+                fileInput.get(c);
+            }
+            if (c == '\n')
+            {
+                this->codes[i] += c;
+                break;
+            }
             this->codes[i] += c;
             fileInput.get(c);
         }
         i++;
-        //++numlines;
-        fileInput.get(c);
     }
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -364,25 +369,27 @@ void VM::run(string filename)
     this->codes = new string[this->nCode];
     for (int i = 0; i < this->nCode; i++)
     {
-        this->codes[i] = "\0";
+        this->codes[i] = "";
     }
     readCode(filename);
-    int numlines = this->nCode;
-    Instruction *instructions = new Instruction[numlines];
-    for (int i = 0; i < numlines; i++)
+    for (int i = 0; i < this->nCode; i++)
     {
-        instructions[i] = instructions[i].getElementInstruction(this->codes[i]);
+        this->codes[i] = eraseChar(this->codes[i], '\n');
     }
-    VM *newVM = new VM(instructions, 0, numlines);
-    newVM->Register = new DataStorage[15];
-    newVM->staticMemory = new DataStorage[65536];
-    newVM->stack = new int[1000];
-    newVM->cpu();
-    delete[] newVM->Register;
-    delete[] newVM->staticMemory;
-    delete[] newVM->stack;
-    delete newVM;
-    delete[] instructions;
+    this->instr = new Instruction[this->nCode];
+    for (int i = 0; i < this->nCode; i++)
+    {
+        this->instr[i] = this->instr[i].getElementInstruction(this->codes[i]);
+    }
+    this->Register = new DataStorage[15];
+    this->staticMemory = new DataStorage[65536];
+    this->stack = new int[1000];
+    this->cpu();
+    delete[] this->Register;
+    delete[] this->staticMemory;
+    delete[] this->stack;
+    delete[] this->instr;
+    delete[] this->codes;
 }
 
 void VM::cpu()
@@ -795,7 +802,7 @@ void VM::cpu()
                         else if (checkTypeR == 2 && checkLiteral == 2)
                         {
 
-                            this->Register[index1].setDataFloat(value.getDataFloat() - this->Register[index1].getDataFloat());
+                            this->Register[index1].setDataFloat(-value.getDataFloat() + this->Register[index1].getDataFloat());
                         }
                         else
                         {
@@ -1634,13 +1641,12 @@ void VM::cpu()
 
                 string op1 = temp.getOp1();
                 int sizeOp1 = op1.length();
-                int index1 = checkRegister(op1, sizeOp1);
+                int index1 = checkRegister(op1, sizeOp1)-1;
                 int check1 = this->Register[index1].getTypeData();
                 if (check1 == 3)
                 {
                     bool value = !(this->Register[index1].getDataBool());
-                    this->Register[index1].setDataBool(value);
-                    this->Register[index1].setTypeData(3);
+                    this->Register[index1].setDataBool(value);                   
                 }
                 else
                 {
@@ -2301,7 +2307,7 @@ void VM::cpu()
                     }
                     else if (check1 == 2)
                     {
-                        cout << this->Register[index1].getDataFloat();
+                        cout << (double)(this->Register[index1].getDataFloat());
                     }
                     else if (check1 == 3)
                     {

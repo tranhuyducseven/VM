@@ -77,8 +77,7 @@ private:
 	Instruction* instr;
 
 public:
-	VM();
-	VM(Instruction* instr, int ip, int nCode);
+	VM();	
 	void run(string filename);
 	void readCode(string filename);
 	void cpu();
