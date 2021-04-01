@@ -10,7 +10,6 @@ int pow(int base, int exp)
 ///////////
 string eraseChar(string str, char c)
 {
-
     int n = str.length();
     string newString = "";
     for (int i = 0; i < n; i++)
@@ -690,8 +689,7 @@ void VM::cpu()
                             }
                             else
                             {
-                                int data = this->Register[index2].getDataInt();
-                                this->Register[index1].setDataInt(this->Register[index1].getDataInt() / data);
+                                this->Register[index1].setDataInt(this->Register[index1].getDataInt() / this->Register[index2].getDataInt());
                             }
                         }
                         else if (check1 == 1 && check2 == 2)
@@ -705,8 +703,7 @@ void VM::cpu()
                             }
                             else
                             {
-                                double data = this->Register[index2].getDataFloat();
-                                this->Register[index1].setDataFloat((double)(this->Register[index1].getDataInt()) / data);
+                                this->Register[index1].setDataFloat((double)(this->Register[index1].getDataInt()) / (double)(this->Register[index2].getDataFloat()));
                             }
                         }
                         else if (check1 == 2 && check2 == 1)
@@ -720,8 +717,7 @@ void VM::cpu()
                             }
                             else
                             {
-                                int data = this->Register[index2].getDataInt();
-                                this->Register[index1].setDataFloat((double)(this->Register[index1].getDataFloat()) / data);
+                                this->Register[index1].setDataFloat((double)(this->Register[index1].getDataFloat()) / (double)(this->Register[index2].getDataInt()));
                             }
                         }
                         else if (check1 == 2 && check2 == 2)
@@ -735,8 +731,7 @@ void VM::cpu()
                             }
                             else
                             {
-                                double data = this->Register[index2].getDataFloat();
-                                this->Register[index1].setDataFloat(this->Register[index1].getDataFloat() / data);
+                                this->Register[index1].setDataFloat(this->Register[index1].getDataFloat() / this->Register[index2].getDataFloat());
                             }
                         }
                         else
@@ -870,7 +865,7 @@ void VM::cpu()
                             else
                             {
 
-                                this->Register[index1].setDataFloat((double)(this->Register[index1]).getDataInt() / value.getDataInt());
+                                this->Register[index1].setDataFloat((double)(this->Register[index1]).getDataInt() / (value.getDataFloat()));
                             }
                         }
                         else if (checkTypeR == 2 && checkLiteral == 1)
@@ -1641,12 +1636,12 @@ void VM::cpu()
 
                 string op1 = temp.getOp1();
                 int sizeOp1 = op1.length();
-                int index1 = checkRegister(op1, sizeOp1)-1;
+                int index1 = checkRegister(op1, sizeOp1) - 1;
                 int check1 = this->Register[index1].getTypeData();
                 if (check1 == 3)
                 {
                     bool value = !(this->Register[index1].getDataBool());
-                    this->Register[index1].setDataBool(value);                   
+                    this->Register[index1].setDataBool(value);
                 }
                 else
                 {
